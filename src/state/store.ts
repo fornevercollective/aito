@@ -1,0 +1,307 @@
+import { create } from "zustand";
+import type {
+  ActiveLayer,
+  EffectKind,
+  EffectPropsByKind,
+  EffectSide,
+} from "@/effects/types";
+import { DEFAULTS } from "@/effects/presets";
+import type {
+  BatchItem,
+  SegmentBackend,
+  SegmentMask,
+  SegmentTool,
+} from "@/segmentation/types";
+import type { LoadedImage } from "@/lib/image";
+
+export interface AiSignals {
+  progress: number;
+  confidence: number;
+  tilesReady: number;
+  focus: { x: number; y: number };
+  busy: boolean;
+  status: string;
+}
+
+export interface ImageMeta {
+  width: number;
+  height: number;
+  name?: string;
+}
+
+export interface AppState {
+  before: string;
+  after: string;
+  beforeMeta: ImageMeta | null;
+  afterMeta: ImageMeta | null;
+  slider: number;
+  sliderDragging: boolean;
+  layers: ActiveLayer[];
+  ai: AiSignals;
+  channel: "idle" | "connecting" | "live" | "mock" | "error";
+
+  /** Active interaction tool on the stage. */
+  segmentTool: SegmentTool;
+  segmentBackend: SegmentBackend;
+  /** Masks for the current before image. */
+  segments: SegmentMask[];
+  activeSegmentId: string | null;
+  segmentBusy: boolean;
+  showStickers: boolean;
+  samReady: boolean;
+
+  /** Batch auto-mask + retouch queue. */
+  batch: BatchItem[];
+  batchRunning: boolean;
+
+  /** Global photo corrections (Halide-style). Applied to the "after" base. */
+  adjustments: {
+    exposure: number;   // -2 .. +2
+    contrast: number;   // -1 .. +1
+    saturation: number; // -1 .. +1
+    temperature: number; // -1 (cool) .. +1 (warm)
+    tint: number;       // -1 (green) .. +1 (magenta)
+    clarity: number;    // -1 .. +1 (local contrast approx)
+  };
+
+  /** How the adjustments are scoped (core of masked corrections). */
+  adjustmentScope: {
+    useActiveMask: boolean; // when true + activeSegment exists → corrections are masked
+    invert: boolean;        // invert the mask (apply to background instead of subject)
+  };
+
+  setSources(b: string, a: string, bMeta?: ImageMeta | null, aMeta?: ImageMeta | null): void;
+  loadImage(target: "before" | "after" | "both", img: LoadedImage): void;
+  setSlider(v: number): void;
+  setSliderDragging(d: boolean): void;
+  setChannel(c: AppState["channel"]): void;
+  setAi(patch: Partial<AiSignals>): void;
+
+  setSegmentTool(t: SegmentTool): void;
+  setSegmentBackend(b: SegmentBackend): void;
+  setSamReady(v: boolean): void;
+  setSegmentBusy(v: boolean): void;
+  setShowStickers(v: boolean): void;
+  addSegment(m: SegmentMask): void;
+  setSegments(masks: SegmentMask[]): void;
+  selectSegment(id: string | null): void;
+  removeSegment(id: string): void;
+  clearSegments(): void;
+
+  addBatchFiles(files: FileList | File[]): void;
+  removeBatchItem(id: string): void;
+  updateBatchItem(id: string, patch: Partial<BatchItem>): void;
+  setBatchRunning(v: boolean): void;
+
+  setAdjustment<K extends keyof AppState["adjustments"]>(key: K, value: number): void;
+  resetAdjustments(): void;
+
+  setAdjustmentScope(patch: Partial<AppState["adjustmentScope"]>): void;
+
+  addLayer<K extends EffectKind>(kind: K, side?: EffectSide): string;
+  removeLayer(id: string): void;
+  toggleLayer(id: string): void;
+  updateLayer<K extends EffectKind>(
+    id: string,
+    patch: Partial<EffectPropsByKind[K]>,
+  ): void;
+  setLayerSide(id: string, side: EffectSide): void;
+}
+
+let idCounter = 0;
+const nextId = () => `layer-${++idCounter}`;
+let batchId = 0;
+const nextBatchId = () => `batch-${++batchId}`;
+
+export const useApp = create<AppState>((set) => ({
+  before:
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1600&q=80&auto=format",
+  after:
+    "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1600&q=80&auto=format",
+  beforeMeta: null,
+  afterMeta: null,
+  slider: 0.5,
+  sliderDragging: false,
+  channel: "idle",
+  segmentTool: "tap",
+  segmentBackend: "sam",
+  segments: [],
+  activeSegmentId: null,
+  segmentBusy: false,
+  showStickers: true,
+  samReady: false,
+  batch: [],
+  batchRunning: false,
+  adjustments: {
+    exposure: 0,
+    contrast: 0,
+    saturation: 0,
+    temperature: 0,
+    tint: 0,
+    clarity: 0,
+  },
+  adjustmentScope: {
+    useActiveMask: false,
+    invert: false,
+  },
+  layers: [
+    {
+      id: nextId(),
+      kind: "sampling",
+      side: "after",
+      enabled: true,
+      props: { ...DEFAULTS.sampling, pixel: 1 },
+    },
+  ],
+  ai: {
+    progress: 1,
+    confidence: 1,
+    tilesReady: 1,
+    focus: { x: 0.5, y: 0.5 },
+    busy: false,
+    status: "idle",
+  },
+
+  setSources: (b, a, bMeta = null, aMeta = null) => {
+    set({
+      before: b,
+      after: a,
+      beforeMeta: bMeta,
+      afterMeta: aMeta,
+      segments: [],
+      activeSegmentId: null,
+    });
+  },
+  loadImage: (target, img) => {
+    set(() => {
+      const clearSegs = { segments: [], activeSegmentId: null as string | null };
+      if (target === "before") {
+        return { before: img.url, beforeMeta: { width: img.width, height: img.height, name: img.name }, ...clearSegs };
+      }
+      if (target === "after") {
+        return { after: img.url, afterMeta: { width: img.width, height: img.height, name: img.name } };
+      }
+      // both (typical "open new photo to edit" flow)
+      return {
+        before: img.url,
+        after: img.url,
+        beforeMeta: { width: img.width, height: img.height, name: img.name },
+        afterMeta: { width: img.width, height: img.height, name: img.name },
+        ...clearSegs,
+      };
+    });
+  },
+  setSlider: (v) => set({ slider: Math.max(0, Math.min(1, v)) }),
+  setSliderDragging: (d) => set({ sliderDragging: d }),
+  setChannel: (c) => set({ channel: c }),
+  setAi: (patch) => set((s) => ({ ai: { ...s.ai, ...patch } })),
+
+  setSegmentTool: (t) => set({ segmentTool: t }),
+  setSegmentBackend: (b) => set({ segmentBackend: b }),
+  setSamReady: (v) => set({ samReady: v }),
+  setSegmentBusy: (v) => set({ segmentBusy: v }),
+  setShowStickers: (v) => set({ showStickers: v }),
+  addSegment: (m) =>
+    set((s) => ({
+      segments: [...s.segments.map((x) => ({ ...x, selected: false })), m],
+      activeSegmentId: m.id,
+      ai: { ...s.ai, focus: m.centroid, confidence: m.score },
+    })),
+  setSegments: (masks) =>
+    set((s) => ({
+      segments: masks,
+      activeSegmentId: masks[0]?.id ?? null,
+      ai: masks[0]
+        ? { ...s.ai, focus: masks[0].centroid, confidence: masks[0].score }
+        : s.ai,
+    })),
+  selectSegment: (id) =>
+    set((s) => {
+      const seg = s.segments.find((m) => m.id === id);
+      return {
+        activeSegmentId: id,
+        segments: s.segments.map((m) => ({ ...m, selected: m.id === id })),
+        ai: seg
+          ? { ...s.ai, focus: seg.centroid, confidence: seg.score }
+          : s.ai,
+      };
+    }),
+  removeSegment: (id) =>
+    set((s) => ({
+      segments: s.segments.filter((m) => m.id !== id),
+      activeSegmentId: s.activeSegmentId === id ? null : s.activeSegmentId,
+    })),
+  clearSegments: () => set({ segments: [], activeSegmentId: null }),
+
+  addBatchFiles: (files) => {
+    const list = Array.from(files as File[]);
+    const items: BatchItem[] = list.map((f) => ({
+      id: nextBatchId(),
+      name: f.name,
+      before: URL.createObjectURL(f),
+      status: "queued",
+      segments: [],
+      progress: 0,
+    }));
+    set((s) => ({ batch: [...s.batch, ...items] }));
+  },
+  removeBatchItem: (id) =>
+    set((s) => ({ batch: s.batch.filter((b) => b.id !== id) })),
+  updateBatchItem: (id, patch) =>
+    set((s) => ({
+      batch: s.batch.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+    })),
+  setBatchRunning: (v) => set({ batchRunning: v }),
+
+  addLayer: (kind, side = "after") => {
+    const id = nextId();
+    const props = { ...DEFAULTS[kind] } as ActiveLayer["props"];
+    set((s) => ({
+      layers: [...s.layers, { id, kind, side, enabled: true, props }],
+    }));
+    return id;
+  },
+  removeLayer: (id) =>
+    set((s) => ({ layers: s.layers.filter((l) => l.id !== id) })),
+  toggleLayer: (id) =>
+    set((s) => ({
+      layers: s.layers.map((l) =>
+        l.id === id ? { ...l, enabled: !l.enabled } : l,
+      ),
+    })),
+  updateLayer: (id, patch) =>
+    set((s) => ({
+      layers: s.layers.map((l) =>
+        l.id === id
+          ? ({ ...l, props: { ...l.props, ...patch } } as ActiveLayer)
+          : l,
+      ),
+    })),
+  setLayerSide: (id, side) =>
+    set((s) => ({
+      layers: s.layers.map((l) => (l.id === id ? { ...l, side } : l)),
+    })),
+
+  setAdjustment: (key, value) =>
+    set((s) => ({
+      adjustments: { ...s.adjustments, [key]: value },
+    })),
+  resetAdjustments: () =>
+    set({
+      adjustments: {
+        exposure: 0,
+        contrast: 0,
+        saturation: 0,
+        temperature: 0,
+        tint: 0,
+        clarity: 0,
+      },
+    }),
+
+  setAdjustmentScope: (patch) =>
+    set((s) => ({
+      adjustmentScope: { ...s.adjustmentScope, ...patch },
+    })),
+}));
+
+export const _internal = { nextId, nextBatchId };
