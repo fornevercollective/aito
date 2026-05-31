@@ -1,4 +1,13 @@
-# aito
+# aito (Umbrella)
+
+**One repository. Multiple iterations.**
+
+- **Main track** — Production Halide-style photo editor (masked corrections, brush, hatch export, WebGL artistic layers).
+- **Living Canvas pivot** — High-end research track exploring vwall patterns + cinematic HUD interfaces (Gmunk/Tron/Resolve/VSCO).
+
+See [versions/](./versions) for the different iterations/forks and the [Astro test site](./site) for the public hub.
+
+---
 
 AI-driven image/video retouching app. v0 ships the visual core: a
 before/after slider with six AI-controllable WebGL effect layers

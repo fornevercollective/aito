@@ -18,6 +18,7 @@ export function MaskOverlay() {
   const activeId = useApp((s) => s.activeSegmentId);
   const showStickers = useApp((s) => s.showStickers);
   const before = useApp((s) => s.before);
+  const adjustmentScope = useApp((s) => s.adjustmentScope);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -50,6 +51,22 @@ export function MaskOverlay() {
           ctx.strokeStyle = COLORS[i % COLORS.length]!.replace("0.35", "0.95");
           ctx.lineWidth = 2;
           ctx.strokeRect(bx, by, bw, bh);
+
+          // Professional hatch visualization for active correction region
+          // (directly addresses "hatch for export" + Apple-style subject lift feedback)
+          if (adjustmentScope.useActiveMask) {
+            const hatch = createHatchPattern(ctx, "#ff5b2e", 6, 0.35) || "#ff5b2e";
+            ctx.save();
+            ctx.globalAlpha = 0.55;
+            ctx.fillStyle = hatch;
+            ctx.fillRect(bx, by, bw, bh);
+            ctx.restore();
+
+            // Strong edge for export clarity
+            ctx.strokeStyle = "#ff5b2e";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(bx - 1, by - 1, bw + 2, bh + 2);
+          }
         }
 
         if (showStickers && seg.stickerUrl && seg.selected) {
@@ -83,4 +100,22 @@ function load(url: string): Promise<HTMLImageElement> {
     img.onerror = rej;
     img.src = url;
   });
+}
+
+/** Creates a reusable diagonal hatch pattern for pro selection visualization (hatch for export). */
+function createHatchPattern(ctx: CanvasRenderingContext2D, color: string, spacing: number, alpha: number): CanvasPattern | null {
+  const p = document.createElement("canvas");
+  p.width = spacing * 2;
+  p.height = spacing * 2;
+  const pc = p.getContext("2d", { alpha: true })!;
+  pc.strokeStyle = color;
+  pc.globalAlpha = alpha;
+  pc.lineWidth = 1;
+  pc.beginPath();
+  pc.moveTo(0, spacing);
+  pc.lineTo(spacing, 0);
+  pc.moveTo(spacing, spacing * 2);
+  pc.lineTo(spacing * 2, spacing);
+  pc.stroke();
+  return ctx.createPattern(p, "repeat");
 }

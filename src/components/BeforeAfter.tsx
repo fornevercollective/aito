@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EffectStage } from "./EffectStage";
 import { MaskOverlay } from "./MaskOverlay";
+import { BrushOverlay } from "./BrushOverlay";
 import { useApp } from "@/state/store";
 import {
   clearSamCache,
@@ -144,6 +145,7 @@ export function BeforeAfter() {
         <EffectStage />
       </div>
       <MaskOverlay />
+      <BrushOverlay />
       <div
         className="slider-handle"
         style={{ left: `${slider * 100}%` }}

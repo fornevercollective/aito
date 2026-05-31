@@ -13,6 +13,7 @@ import type {
   SegmentTool,
 } from "@/segmentation/types";
 import type { LoadedImage } from "@/lib/image";
+import { BakeTreeWalker, type BakeNode } from "@/lib/bake-tree";
 
 export interface AiSignals {
   progress: number;
@@ -70,6 +71,19 @@ export interface AppState {
     invert: boolean;        // invert the mask (apply to background instead of subject)
   };
 
+  /** Brush tool state for mask refinement (Apple-style corrections). */
+  brush: {
+    active: boolean;
+    size: number;      // px radius (screen space, will be scaled)
+    hardness: number;  // 0..1 (softness of falloff)
+    mode: "add" | "subtract";
+  };
+
+  /** Live bake tree (tree-sitter style + vwall ladder integration). */
+  bakeWalker: BakeTreeWalker;
+  currentBakeHead: string | null; // id of the tip of the live bake tree
+  bakeHistory: BakeNode[]; // flattened recent commits for UI rails
+
   setSources(b: string, a: string, bMeta?: ImageMeta | null, aMeta?: ImageMeta | null): void;
   loadImage(target: "before" | "after" | "both", img: LoadedImage): void;
   setSlider(v: number): void;
@@ -97,6 +111,12 @@ export interface AppState {
   resetAdjustments(): void;
 
   setAdjustmentScope(patch: Partial<AppState["adjustmentScope"]>): void;
+
+  setBrush(patch: Partial<AppState["brush"]>): void;
+  toggleBrush(): void;
+
+  appendBakeNode(node: import("@/lib/bake-tree").BakeNode): void;
+  createBakeCommit(label?: string): void;
 
   addLayer<K extends EffectKind>(kind: K, side?: EffectSide): string;
   removeLayer(id: string): void;
@@ -144,6 +164,15 @@ export const useApp = create<AppState>((set) => ({
     useActiveMask: false,
     invert: false,
   },
+  brush: {
+    active: false,
+    size: 48,
+    hardness: 0.6,
+    mode: "add",
+  },
+  bakeWalker: new BakeTreeWalker(),
+  currentBakeHead: null,
+  bakeHistory: [],
   layers: [
     {
       id: nextId(),
@@ -302,6 +331,34 @@ export const useApp = create<AppState>((set) => ({
     set((s) => ({
       adjustmentScope: { ...s.adjustmentScope, ...patch },
     })),
+
+  setBrush: (patch) =>
+    set((s) => ({
+      brush: { ...s.brush, ...patch },
+    })),
+  toggleBrush: () =>
+    set((s) => ({
+      brush: { ...s.brush, active: !s.brush.active },
+    })),
+
+  // Live bake tree actions (tree-sitter walker + vwall ladder ready)
+  appendBakeNode: (node: BakeNode) =>
+    set((s) => {
+      s.bakeWalker.addNode(node);
+      return {
+        currentBakeHead: node.id,
+        bakeHistory: [...s.bakeHistory, node].slice(-50), // keep recent for rails
+      };
+    }),
+  createBakeCommit: (label?: string) =>
+    set((s) => {
+      if (!s.currentBakeHead) return {};
+      const commit = s.bakeWalker.createCommit(s.currentBakeHead, label);
+      return {
+        currentBakeHead: commit.id,
+        bakeHistory: [...s.bakeHistory, commit].slice(-50),
+      };
+    }),
 }));
 
 export const _internal = { nextId, nextBatchId };

@@ -209,6 +209,7 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 }
 .stage.tool-tap { cursor: crosshair; }
 .stage.tool-auto { cursor: wait; }
+.brush-overlay { pointer-events: auto; }
 .stage.tool-slider { cursor: default; }
 
 .mask-overlay {

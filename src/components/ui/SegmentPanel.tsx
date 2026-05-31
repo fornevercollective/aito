@@ -18,6 +18,12 @@ export function SegmentPanel() {
   const segmentBusy = useApp((s) => s.segmentBusy);
   const before = useApp((s) => s.before);
   const channel = useApp((s) => s.channel);
+  const adjustmentScope = useApp((s) => s.adjustmentScope);
+  const useActiveMask = adjustmentScope.useActiveMask;
+
+  const brush = useApp((s) => s.brush);
+  const toggleBrush = useApp((s) => s.toggleBrush);
+  const setBrush = useApp((s) => s.setBrush);
 
   const setSegmentTool = useApp((s) => s.setSegmentTool);
   const setSegmentBackend = useApp((s) => s.setSegmentBackend);
@@ -69,7 +75,56 @@ export function SegmentPanel() {
             {t}
           </span>
         ))}
+        {/* Brush refinement — critical for high-quality Apple-style mask corrections */}
+        <span
+          className={`pill ${brush.active ? "active" : ""}`}
+          onClick={() => toggleBrush()}
+          title="Freehand refine active mask (add/subtract)"
+        >
+          brush
+        </span>
       </div>
+
+      {brush.active && (
+        <div style={{ marginTop: 8, fontSize: 11 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <span>size</span>
+            <input
+              type="range"
+              min={8}
+              max={180}
+              value={brush.size}
+              onChange={(e) => setBrush({ size: Number(e.target.value) })}
+              style={{ flex: 1 }}
+            />
+            <span style={{ width: 28, textAlign: "right" }}>{brush.size}</span>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+            <span>hard</span>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={brush.hardness}
+              onChange={(e) => setBrush({ hardness: Number(e.target.value) })}
+              style={{ flex: 1 }}
+            />
+            <span style={{ width: 28, textAlign: "right" }}>{brush.hardness.toFixed(1)}</span>
+          </div>
+          <div className="pill-row" style={{ marginTop: 4 }}>
+            {(["add", "subtract"] as const).map((m) => (
+              <span
+                key={m}
+                className={`pill side ${brush.mode === m ? "active" : ""}`}
+                onClick={() => setBrush({ mode: m })}
+              >
+                {m}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="pill-row">
         {(["sam", "mock"] as const).map((b) => (
@@ -108,8 +163,8 @@ export function SegmentPanel() {
       </label>
 
       <p className="hint">
-        Tap mode: click subject to lift (Meta SAM). Auto mode: grid probe
-        like Apple sticker batch. Server backend when WS is live.
+        Tap / Auto subjects → then use <strong>Adjust</strong> panel with "Scope to active mask".
+        This is the core masked corrections flow (Halide-style).
       </p>
 
       <h3>Masks ({segments.length})</h3>
@@ -122,6 +177,9 @@ export function SegmentPanel() {
           >
             <span>{m.label ?? m.id}</span>
             <span className="score">{(m.score * 100).toFixed(0)}%</span>
+            {m.id === activeId && useActiveMask && (
+              <span className="pill side" style={{ background: "var(--accent)", color: "#000", fontSize: 9, padding: "1px 5px" }}>corrections</span>
+            )}
             <button
               type="button"
               className="x"

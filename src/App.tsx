@@ -20,6 +20,8 @@ export default function App() {
   const channel = useApp((s) => s.channel);
   const loadImage = useApp((s) => s.loadImage);
   const before = useApp((s) => s.before);
+  const adjustmentScope = useApp((s) => s.adjustmentScope);
+  const activeSegmentId = useApp((s) => s.activeSegmentId);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -98,6 +100,79 @@ export default function App() {
     a.remove();
   };
 
+  // Mask-aware "hatch for export" variants — Apple-style subject lift with treatments.
+  // Uses the active SAM mask + current corrected view for clean pixel output.
+  const exportMasked = async (mode: "subject" | "background") => {
+    const stage = document.querySelector(".stage") as HTMLElement | null;
+    const glCanvas = stage?.querySelector("canvas") as HTMLCanvasElement | null;
+    const s = useApp.getState();
+    const activeMask = s.segments.find((m) => m.id === s.activeSegmentId);
+    if (!glCanvas || !activeMask) return;
+
+    // Capture the corrected "after" view (full right side)
+    const prevSlider = s.slider;
+    const setSlider = s.setSlider;
+    setSlider(1);
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const rect = glCanvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const capture = document.createElement("canvas");
+    capture.width = Math.floor(rect.width * dpr);
+    capture.height = Math.floor(rect.height * dpr);
+    const cctx = capture.getContext("2d", { alpha: true })!;
+    cctx.scale(dpr, dpr);
+    cctx.drawImage(glCanvas, 0, 0, rect.width, rect.height);
+    setSlider(prevSlider);
+
+    // Load the high-res mask and composite
+    const maskImg = await new Promise<HTMLImageElement>((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = rej;
+      im.src = activeMask.dataUrl;
+    });
+
+    const out = document.createElement("canvas");
+    out.width = capture.width;
+    out.height = capture.height;
+    const octx = out.getContext("2d", { alpha: true })!;
+
+    // Draw base corrected image
+    octx.drawImage(capture, 0, 0);
+
+    // Use mask as alpha mask for the desired region
+    octx.globalCompositeOperation = "destination-in";
+    // Scale the mask to the capture size (masks are stored at native image res)
+    const mw = maskImg.width;
+    const mh = maskImg.height;
+    const scaleX = capture.width / mw;
+    const scaleY = capture.height / mh;
+    octx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+
+    if (mode === "subject") {
+      octx.drawImage(maskImg, 0, 0);
+    } else {
+      // background = invert mask
+      octx.fillStyle = "#fff";
+      octx.fillRect(0, 0, mw, mh);
+      octx.globalCompositeOperation = "destination-out";
+      octx.drawImage(maskImg, 0, 0);
+    }
+
+    octx.setTransform(1, 0, 0, 1, 0, 0);
+    octx.globalCompositeOperation = "source-over";
+
+    const a = document.createElement("a");
+    const name = s.afterMeta?.name?.replace(/\.[^.]+$/, "") || "aito-edit";
+    const suffix = mode === "subject" ? "-subject" : "-background";
+    a.href = out.toDataURL("image/png");
+    a.download = `${name}${suffix}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   useEffect(() => {
     const handle = connectAiChannel(WS_URL || undefined);
     return () => handle.close();
@@ -141,8 +216,18 @@ export default function App() {
           Swap
         </button>
         <button type="button" className="top-btn primary" onClick={() => void exportCurrent()}>
-          Export
+          Export Full
         </button>
+        {adjustmentScope.useActiveMask && activeSegmentId && (
+          <>
+            <button type="button" className="top-btn" onClick={() => void exportMasked("subject")}>
+              Export Subject
+            </button>
+            <button type="button" className="top-btn" onClick={() => void exportMasked("background")}>
+              Export BG
+            </button>
+          </>
+        )}
         <span className="muted">SAM · corrections · before/after</span>
         <div className="spacer" />
         <span className="muted">

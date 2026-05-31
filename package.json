@@ -1,8 +1,12 @@
 {
-  "name": "aito",
+  "name": "aito-umbrella",
   "private": true,
   "version": "0.0.1",
+  "description": "aito — AI photo retouching. One umbrella repo with multiple iterations (main Halide track + living-canvas pivot).",
   "type": "module",
+  "workspaces": [
+    "site"
+  ],
   "description": "AI image/video retouching app with AI-controllable WebGL effect layers over a before/after slider.",
   "scripts": {
     "dev": "vite",
