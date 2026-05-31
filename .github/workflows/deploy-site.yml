@@ -30,23 +30,31 @@ jobs:
       - name: Install root deps
         run: npm ci
 
-      - name: Build main editor (for /versions/main/)
+      # Build the main editor first into a temp location
+      - name: Build main aito editor (primary live experience, like vwall)
+        env:
+          VITE_BASE: /aito/
         run: |
-          npm ci
           npm run build
-          mkdir -p site/dist/versions/main
-          cp -r dist/* site/dist/versions/main/
 
-      - name: Build Astro site (hub + dynamic iterations)
+      # Build Astro hub for additional pages (iterations docs, living-canvas vision)
+      # These get merged so the main editor remains the primary experience at root
+      - name: Build Astro hub (iterations + living-canvas pages)
         run: |
           cd site
           npm ci
           npm run build
+          # Merge Astro output (pages like /iterations, /versions/living-canvas) into the main dist
+          cp -r dist/* ../dist/ 2>/dev/null || true
+
+      # Future iterations can add similar steps, e.g.
+      # - name: Build living-canvas preview (when ready)
+      #   ...
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/dist
+          path: dist
 
   deploy:
     environment:

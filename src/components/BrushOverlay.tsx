@@ -112,20 +112,23 @@ export function BrushOverlay() {
       // Capture the brush delta as a small dataUrl patch
       const patchUrl = canvas.toDataURL("image/png");
 
-      // Record as BakeNode for the live tree (tree-sitter walker + future vwall ladder)
+      // Record as BakeNode for the live tree (tree-sitter walker + vwall ladder ready)
       if (currentHead || activeMask.id) {
         const strokeNode = createBrushStrokeNode(
           currentHead || activeMask.id,
           activeMask.id,
           {
-            points: [], // could serialize sampled points if needed for replay
+            points: [], 
             size: brush.size,
             hardness: brush.hardness,
             mode: brush.mode,
           }
         );
-        // Attach the raster patch for immediate compositing
+        // Attach the raster patch — this enables the live incremental bake path
         (strokeNode.payload as any).patchDataUrl = patchUrl;
+        (strokeNode.payload as any).screenRect = { 
+          x: 0, y: 0, w: canvas.width, h: canvas.height 
+        };
 
         appendBakeNode(strokeNode);
 
