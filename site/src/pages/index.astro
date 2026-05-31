@@ -1,0 +1,114 @@
+---
+import iterationsConfig from '../../../versions/iterations.json';
+import VersionSwitcher from '../components/VersionSwitcher.astro';
+const iterations = iterationsConfig.iterations;
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>aito — AI photo retouching • iterations</title>
+		<style>
+			:root {
+				--bg: #0a0a0b;
+				--fg: #e7e7ea;
+				--accent: #ff5b2e;
+				--muted: #8a8a93;
+				--card: #111113;
+			}
+			body {
+				margin: 0;
+				background: var(--bg);
+				color: var(--fg);
+				font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, system-ui, sans-serif;
+				line-height: 1.5;
+			}
+			.container { max-width: 1080px; margin: 0 auto; padding: 2rem; }
+			header { text-align: center; padding: 4rem 0 3rem; }
+			h1 { font-size: 3.2rem; margin: 0 0 .5rem; letter-spacing: -.02em; }
+			.tagline { font-size: 1.25rem; color: var(--muted); max-width: 520px; margin: 0 auto; }
+			.iterations {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+				gap: 2rem;
+				margin: 3rem 0;
+			}
+			.card {
+				background: var(--card);
+				border: 1px solid rgba(255,255,255,.08);
+				border-radius: 12px;
+				padding: 2rem;
+				transition: transform .2s ease, border-color .2s ease;
+			}
+			.card:hover { transform: translateY(-4px); border-color: var(--accent); }
+			.card h2 { margin-top: 0; color: var(--accent); }
+			.card .status { font-size: .85rem; padding: .1rem .5rem; border-radius: 999px; background: rgba(255,91,46,.15); color: var(--accent); display: inline-block; margin-bottom: 1rem; }
+			.links a { color: var(--accent); text-decoration: none; }
+			.links a:hover { text-decoration: underline; }
+			footer { text-align: center; padding: 3rem 0 2rem; color: var(--muted); font-size: .9rem; }
+			.badge { font-size: .75rem; padding: 2px 8px; border-radius: 999px; background: #222; }
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<VersionSwitcher />
+			<header>
+				<h1>aito</h1>
+				<p class="tagline">
+					AI-driven image &amp; video retouching.<br>
+					One umbrella. Multiple iterations.
+				</p>
+			</header>
+
+			<section>
+				<h2 style="text-align:center; margin-bottom:2rem;">Active Iterations</h2>
+				
+				<div class="iterations">
+					{iterations.map((iter) => (
+						<div class="card">
+							<span class="status">{iter.status.toUpperCase()} • {iter.type.toUpperCase()}</span>
+							<h2>{iter.title}</h2>
+							<p>{iter.description}</p>
+							
+							<div class="links">
+								{iter.demoPath ? (
+									<a href={iter.demoPath}>→ Open Live Demo</a>
+								) : (
+									<a href="https://github.com/fornevercollective/aito">→ View on GitHub + Run Locally</a>
+								)}
+								<br />
+								<a href={`https://github.com/fornevercollective/aito/tree/${iter.sourceBranch}`}>Source ({iter.sourceBranch} branch)</a>
+								{iter.artifacts && iter.artifacts.length > 0 && (
+									<>
+										<br />
+										<a href={`/versions/${iter.id}/`}>→ View Artifacts</a>
+									</>
+								)}
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+
+			<section style="max-width:720px; margin: 0 auto; text-align:center;">
+				<h3 style="color:var(--muted);">One repo. Multiple futures.</h3>
+				<p>
+					Both iterations share the same powerful core (Three.js EffectStage, SAM segmentation, 
+					AI signal mapper, artistic shader layers). The Living Canvas track adds a dramatically 
+					richer presentation and data layer on top.
+				</p>
+			</section>
+
+			<footer>
+				<p>
+					Built with Astro • Deployed via GitHub Actions<br>
+					<a href="https://github.com/fornevercollective/aito">GitHub Repository</a>
+				</p>
+			</footer>
+		</div>
+	</body>
+</html>

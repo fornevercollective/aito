@@ -1,0 +1,45 @@
+---
+import VersionSwitcher from '../../components/VersionSwitcher.astro';
+import LiveBakeRail from '../../components/LiveBakeRail.astro';
+---
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Living Canvas Pivot — aito</title>
+	<style>
+		body { background:#0a0a0b; color:#e7e7ea; font-family: system-ui, sans-serif; padding: 2rem; max-width: 860px; margin: 0 auto; line-height: 1.65; }
+		h1, h2 { color: #ff5b2e; }
+		pre { background:#111; padding:1rem; overflow:auto; }
+	</style>
+</head>
+<body>
+	<VersionSwitcher />
+	<h1>Living Canvas Pivot — versions/living-canvas</h1>
+	<p><a href="/">← Back to umbrella</a></p>
+
+	<h2>Architecture Proposal</h2>
+	<p>This is the forward-looking research track for aito.</p>
+
+	<!-- In a real setup you would render the markdown nicely.
+	     For now we link to the raw file in the repo. -->
+	<p>
+		<a href="https://github.com/fornevercollective/aito/blob/main/versions/living-canvas/docs/LIVING-CANVAS-ARCHITECTURE-PROPOSAL.md">
+			Read the full proposal on GitHub →
+		</a>
+	</p>
+
+	<h2>Design Tokens</h2>
+	<p>The living tokens (aito + Tron + Resolve + filmic) live here:</p>
+	<p><code>iterations/living-canvas/src/styles/living-tokens.css</code></p>
+
+	<p style="margin-top:3rem; color:#8a8a93;">
+		This page is part of the static Astro umbrella site. The actual experimental code can live in a branch or in this folder.
+	</p>
+
+	<h2>Live Bake Path (vwall + Tree Walker)</h2>
+	<p>One of the key technical explorations in this track is an incremental bake system using a tree-sitter-style edit graph + vwall MediaLadder patterns for efficient variant storage and LOD previews.</p>
+	
+	<LiveBakeRail />
+</body>
+</html>

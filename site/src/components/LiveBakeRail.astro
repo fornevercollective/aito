@@ -1,0 +1,73 @@
+---
+// Simple static visualization of the live bake path concept
+// Uses living-tokens for the future aesthetic
+---
+
+<div class="bake-rail">
+  <div class="rail-header">
+    <span class="title">Live Bake History</span>
+    <span class="meta">Tree-walker + vwall ladder (concept)</span>
+  </div>
+  
+  <div class="rail">
+    <div class="node commit">Root</div>
+    <div class="node">SAM Mask</div>
+    <div class="node active">Brush Stroke #3</div>
+    <div class="node">Adjustment (scoped)</div>
+    <div class="node commit">Checkpoint v3</div>
+  </div>
+  
+  <div class="note">
+    Each node can produce a ladder entry (preview + full). 
+    The walker only re-bakes dirty subtrees.
+  </div>
+</div>
+
+<style>
+  .bake-rail {
+    background: #0a0a0b;
+    border: 1px solid var(--lc-line, #222);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-family: monospace;
+  }
+  .rail-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .title { color: var(--lc-accent, #ff5b2e); font-weight: 600; }
+  .meta { color: #666; }
+  
+  .rail {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .node {
+    white-space: nowrap;
+    padding: 4px 10px;
+    background: #1a1a1c;
+    border: 1px solid #333;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+  .node.active {
+    border-color: var(--lc-cyan, #00f0ff);
+    background: rgba(0, 240, 255, 0.1);
+  }
+  .node.commit {
+    border-color: var(--lc-amber, #ff9f1c);
+    background: rgba(255, 159, 28, 0.1);
+  }
+  .note {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 8px;
+    border-top: 1px dashed #222;
+    padding-top: 8px;
+  }
+</style>

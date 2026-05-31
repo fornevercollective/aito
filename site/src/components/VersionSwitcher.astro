@@ -1,0 +1,51 @@
+---
+import iterationsConfig from '../../../versions/iterations.json';
+const current = Astro.url.pathname.includes('living-canvas') ? 'living-canvas' : 'main';
+---
+
+<nav class="version-switcher">
+  <span class="label">Switch iteration:</span>
+  {iterationsConfig.iterations.map((iter) => {
+    const isActive = iter.id === current;
+    const href = iter.id === 'main' ? '/' : `/versions/${iter.id}/`;
+    return (
+      <a 
+        href={href} 
+        class={`switch ${isActive ? 'active' : ''}`}
+      >
+        {iter.title}
+      </a>
+    );
+  })}
+</nav>
+
+<style>
+  .version-switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+  .label {
+    color: var(--muted);
+    margin-right: 8px;
+  }
+  .switch {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #222;
+    color: #ddd;
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+  .switch:hover {
+    border-color: #ff5b2e;
+  }
+  .switch.active {
+    background: #ff5b2e;
+    color: #000;
+    font-weight: 600;
+  }
+</style>
