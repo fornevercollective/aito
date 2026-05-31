@@ -1,3 +1,4 @@
+# Root level
 node_modules
 dist
 .DS_Store
@@ -5,3 +6,16 @@ dist
 *.local
 .env*
 __pycache__
+
+# Astro site (the umbrella hub)
+site/node_modules
+site/dist
+site/.astro
+site/.netlify
+site/.vercel
+
+# Common editor / OS noise
+.idea/
+.vscode/
+*.swp
+*.swo
