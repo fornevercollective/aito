@@ -1,7 +1,7 @@
 import { COLOR_OPS, SLIDER_CLIP, VERTEX_FLAT } from "./common.glsl";
 
 /**
- * Adjust: core photo corrections pass (Halide / Resolve inspired).
+ * Adjust: core photo corrections pass (Resolve-inspired).
  *
  * Applied to the "after" base before artistic effect layers.
  * All values are artist-friendly and centered at 0 = no change.

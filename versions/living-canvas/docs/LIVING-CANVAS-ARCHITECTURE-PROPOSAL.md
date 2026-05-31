@@ -2,7 +2,7 @@
 
 **Branch/Worktree**: `pivot/living-canvas` @ `/Users/qbit/dev/aito-living-canvas`  
 **Date**: 2026-05-31 (exploration snapshot)  
-**Context**: Approved background high-end track (`vwall-pivot` + `lut-mood` in stageforge.yaml). Parallel to core Halide masked-corrections / bake immediate track. Existing aito (Three.js EffectStage + before/after slider + SAM + artistic WebGL layers + AI mapper) **must remain 100% functional and unchanged**.
+**Context**: Approved background high-end track (`vwall-pivot` + `lut-mood` in stageforge.yaml). Parallel to core main track (masked corrections / bake). Existing aito (Three.js EffectStage + before/after slider + SAM + artistic WebGL layers + AI mapper) **must remain 100% functional and unchanged**.
 
 ---
 
@@ -14,7 +14,7 @@ aito becomes a **premium, cinematic "living canvas" photo editor** — dramatica
 
 1. **Forge Surface (Preserved Core — "Reveal / Treatment / AI Process Viz")**
    - `src/components/EffectStage.tsx` + `BeforeAfter.tsx` + `EffectLayer.tsx`
-   - Six artistic GLSL layers (sampling/unfocused/burn/glass/magnifier/crack) + Halide-style `adjust` base pass (now with SAM mask scoping)
+   - Six artistic GLSL layers (sampling/unfocused/burn/glass/magnifier/crack) + core `adjust` base pass (now with SAM mask scoping)
    - Slider-driven before/after clipping (`SLIDER_CLIP` in common.glsl.ts)
    - `src/ai/mapper.ts` as single source of truth for AI signals → uniforms
    - SAM segmentation (`src/segmentation/`) as mask source for scoped corrections
@@ -179,7 +179,7 @@ src/
 
 ## Recommended Starting Experiments (2–3 Parallel, Non-Breaking)
 
-These can run **alongside** the main Halide immediate track (masked-corrections, brush, bake-commit, capture-bake, sam-matting) without touching Forge code or breaking current UX. Do them in the `pivot/living-canvas` worktree or behind flags in main.
+These can run **alongside** the main development track (masked-corrections, brush, bake-commit, capture-bake, sam-matting) without touching Forge code or breaking current UX. Do them in the `pivot/living-canvas` worktree or behind flags in main.
 
 1. **Pure-TS Media Ladder + Basic Variant Session Scaffold (Highest Priority Starter)**
    - Port/adapt `media-ladder.js` + minimal `session.js` logic into `src/lib/media-ladder.ts` + `src/lib/variant-session.ts` (no Pixi, no new deps).

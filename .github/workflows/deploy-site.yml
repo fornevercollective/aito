@@ -30,19 +30,18 @@ jobs:
       - name: Install root deps
         run: npm ci
 
-      - name: Build Astro site
+      - name: Build main editor (for /versions/main/)
+        run: |
+          npm ci
+          npm run build
+          mkdir -p site/dist/versions/main
+          cp -r dist/* site/dist/versions/main/
+
+      - name: Build Astro site (hub + dynamic iterations)
         run: |
           cd site
           npm ci
           npm run build
-
-      # Optional: build the main editor and place it under site/dist/app/
-      # Uncomment when you want the full SPA available at /aito/app/
-      # - name: Build main editor (optional)
-      #   run: |
-      #     npm run build
-      #     mkdir -p site/dist/app
-      #     cp -r dist/* site/dist/app/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -129,7 +129,7 @@ stages:
       - inference
 
   - id: corrections
-    label: Masked corrections & brush (Halide core)
+    label: Masked corrections & brush (core)
     jobs:
       - masked-corrections
       - brush-refinement

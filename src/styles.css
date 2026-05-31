@@ -306,7 +306,7 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 }
 .batch-list .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Drag & drop (Halide direct, spacious) */
+/* Drag & drop (direct, spacious) */
 .stage.drag-over {
   outline: 2px solid var(--accent);
   outline-offset: -2px;

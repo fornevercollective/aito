@@ -7,7 +7,7 @@ This repository is structured as an **umbrella** containing multiple parallel it
 ```
 / (umbrella root)
 ├── versions/
-│   ├── main/                  ← stable, actively developed Halide editor (most code lives here or at root)
+│   ├── main/                  ← stable, actively developed editor (most code lives here or at root)
 │   └── living-canvas/         ← high-end pivot / research track
 │       ├── docs/
 │       │   └── LIVING-CANVAS-ARCHITECTURE-PROPOSAL.md
@@ -32,7 +32,7 @@ It serves as the single source of truth for:
 Recommended options (choose one):
 
 1. **Branches** (simplest for most people)
-   - `main` = current stable Halide track
+   - `main` = current stable main track
    - `living-canvas` = the high-end pivot branch
 
 2. **Directories** (current structure)
@@ -44,6 +44,8 @@ Recommended options (choose one):
    - Use long-lived branches + the `versions/` directory for clear archival of different iterations
 
 The `versions/` folder approach makes the different tracks very explicit when people browse the repo or the deployed Astro test site.
+
+See [BUILD-EXTENSIONS.md](./BUILD-EXTENSIONS.md) for how to add new iterations with full build + online deployment support.
 
 ## Contributing
 

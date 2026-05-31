@@ -2,7 +2,7 @@
 
 **One repository. Multiple iterations.**
 
-- **Main track** — Production Halide-style photo editor (masked corrections, brush, hatch export, WebGL artistic layers).
+- **Main track** — Production photo editor (masked corrections, brush, hatch export, WebGL artistic layers).
 - **Living Canvas pivot** — High-end research track exploring vwall patterns + cinematic HUD interfaces (Gmunk/Tron/Resolve/VSCO).
 
 See [versions/](./versions) for the different iterations/forks and the [Astro test site](./site) for the public hub.

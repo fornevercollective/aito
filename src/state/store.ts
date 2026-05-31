@@ -55,7 +55,7 @@ export interface AppState {
   batch: BatchItem[];
   batchRunning: boolean;
 
-  /** Global photo corrections (Halide-style). Applied to the "after" base. */
+  /** Global photo corrections. Applied to the "after" base. */
   adjustments: {
     exposure: number;   // -2 .. +2
     contrast: number;   // -1 .. +1

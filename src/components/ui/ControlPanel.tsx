@@ -142,7 +142,7 @@ export function ControlPanel() {
           Reset adjustments
         </button>
 
-        {/* Masked corrections — core Halide-style feature using SAM */}
+        {/* Masked corrections — core feature using SAM */}
         <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
           <label className="check" style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
             <input

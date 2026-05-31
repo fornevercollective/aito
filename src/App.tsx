@@ -32,7 +32,7 @@ export default function App() {
     if (file) {
       try {
         const loaded = await loadFile(file);
-        loadImage("both", loaded); // Halide-style: open photo ready to edit
+        loadImage("both", loaded); // open photo ready to edit
         // Make SAM central immediately
         setTabState("segment");
       } catch (err) {
@@ -43,7 +43,7 @@ export default function App() {
     e.target.value = "";
   };
 
-  // One-time auto subject lift when user opens a fresh photo (Halide "it just works")
+  // One-time auto subject lift when user opens a fresh photo (immediate "it just works")
   const didAutoSegmentRef = useRef<string>("");
   useEffect(() => {
     if (!before || didAutoSegmentRef.current === before) return;

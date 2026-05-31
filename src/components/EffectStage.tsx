@@ -89,7 +89,7 @@ function Layers() {
         />
       </mesh>
 
-      {/* Halide-style corrections pass — always on the after side */}
+      {/* Core corrections pass — always on the after side */}
       <mesh position={[0, 0, -0.003]}>
         <planeGeometry args={[1, 1]} />
         <shaderMaterial

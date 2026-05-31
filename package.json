@@ -2,7 +2,7 @@
   "name": "aito-umbrella",
   "private": true,
   "version": "0.0.1",
-  "description": "aito — AI photo retouching. One umbrella repo with multiple iterations (main Halide track + living-canvas pivot).",
+  "description": "aito — AI photo retouching. One umbrella repo with multiple iterations (main track + living-canvas pivot).",
   "type": "module",
   "workspaces": [
     "site"

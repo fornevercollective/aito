@@ -1,0 +1,26 @@
+{
+  "iterations": [
+    {
+      "id": "main",
+      "title": "Main Track",
+      "status": "stable",
+      "description": "Production photo editor with before/after WebGL forge, SAM-powered masked corrections, brush refinement, and mask-aware exports.",
+      "demoPath": "/versions/main/",
+      "sourceBranch": "main",
+      "type": "editor"
+    },
+    {
+      "id": "living-canvas",
+      "title": "Living Canvas Pivot",
+      "status": "research",
+      "description": "High-end evolution using vwall patterns for large-scale variant handling combined with cinematic HUD interfaces (Gmunk/Tron, Minority Report, DaVinci Resolve aesthetics).",
+      "demoPath": null,
+      "sourceBranch": "living-canvas",
+      "type": "pivot",
+      "artifacts": [
+        "docs/LIVING-CANVAS-ARCHITECTURE-PROPOSAL.md",
+        "src/styles/living-tokens.css"
+      ]
+    }
+  ]
+}

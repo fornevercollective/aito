@@ -99,7 +99,7 @@ export function BeforeAfter() {
     if (segmentTool === "auto") void runAuto();
   }, [segmentTool, before]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // --- Drag & drop image loading (Halide-style direct) ---
+  // --- Drag & drop image loading (direct) ---
   const [isDragging, setIsDragging] = useState(false);
   const loadImage = useApp((s) => s.loadImage);
 
@@ -163,7 +163,7 @@ export function BeforeAfter() {
         <span>{segmentBusy ? "segmenting…" : ai.busy ? ai.status : "idle"}</span>
       </div>
 
-      {/* Drag overlay (Halide direct feel) */}
+      {/* Drag overlay (direct feel) */}
       {isDragging && (
         <div className="drop-overlay">
           <div className="drop-card">

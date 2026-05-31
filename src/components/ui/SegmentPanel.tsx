@@ -164,7 +164,7 @@ export function SegmentPanel() {
 
       <p className="hint">
         Tap / Auto subjects → then use <strong>Adjust</strong> panel with "Scope to active mask".
-        This is the core masked corrections flow (Halide-style).
+        This is the core masked corrections flow.
       </p>
 
       <h3>Masks ({segments.length})</h3>
