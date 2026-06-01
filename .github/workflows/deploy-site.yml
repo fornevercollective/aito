@@ -21,13 +21,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node (22.14+ required by site/ workspace)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.14
           cache: 'npm'
 
-      - name: Install root deps
+      - name: Verify Node version (enforce engine requirements)
+        run: |
+          node -e '
+            const [major, minor] = process.version.replace("v", "").split(".").map(Number);
+            const requiredMajor = 22;
+            const requiredMinor = 14;
+            if (major < requiredMajor || (major === requiredMajor && minor < requiredMinor)) {
+              console.error(`❌ Node >= ${requiredMajor}.${requiredMinor} is required.`);
+              console.error(`   Current: ${process.version}`);
+              console.error("   Reason: The Astro site in /site requires Node 22.14+ (see site/package.json engines).");
+              console.error("   Please use a recent Node 22 LTS version locally and in CI.");
+              process.exit(1);
+            }
+            console.log(`✅ Node version OK: ${process.version}`);
+          '
+
+      - name: Install all dependencies (root + workspaces)
         run: npm ci
 
       # Build the main editor first into a temp location
@@ -37,14 +53,12 @@ jobs:
         run: |
           npm run build
 
-      # Build Astro hub for additional pages (iterations docs, living-canvas vision)
-      # These get merged so the main editor remains the primary experience at root
+      # Build Astro hub (uses already-installed deps from root npm ci)
       - name: Build Astro hub (iterations + living-canvas pages)
         run: |
           cd site
-          npm ci
           npm run build
-          # Merge Astro output (pages like /iterations, /versions/living-canvas) into the main dist
+          # Merge Astro output into the main dist so the final Pages artifact has everything
           cp -r dist/* ../dist/ 2>/dev/null || true
 
       # Future iterations can add similar steps, e.g.
