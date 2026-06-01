@@ -9,17 +9,20 @@ import LiveBakeRail from '../../components/LiveBakeRail.astro';
 	<title>Living Canvas Pivot — aito</title>
 	<style>
 		body { background:#0a0a0b; color:#e7e7ea; font-family: system-ui, sans-serif; padding: 2rem; max-width: 860px; margin: 0 auto; line-height: 1.65; }
-		h1, h2 { color: #ff5b2e; }
+		h1 { color: #ff5b2e; margin-bottom: 0.25rem; }
+		.subtitle { color: #8a8a93; font-size: 1.1rem; margin-top: 0; }
+		h2 { color: #ff5b2e; margin-top: 2rem; }
 		pre { background:#111; padding:1rem; overflow:auto; }
 	</style>
 </head>
 <body>
 	<VersionSwitcher />
-	<h1>Living Canvas Pivot — versions/living-canvas</h1>
-	<p><a href={import.meta.env.BASE_URL}>← Back to umbrella</a></p>
+	<h1>Live Canvas</h1>
+	<p class="subtitle">The local CLI companion for aito</p>
+	<p><a href="/aito/hub/">← Back to hub</a></p>
 
-	<h2>Architecture Proposal</h2>
-	<p>This is the forward-looking research track for aito.</p>
+	<h2>Built for the people who live on set and in the color suite.</h2>
+	<p>Real-time camera tethering, advanced LUT creation &amp; application, and the tools you actually need when you're working with high-end stills and motion.</p>
 
 	<!-- In a real setup you would render the markdown nicely.
 	     For now we link to the raw file in the repo. -->
@@ -33,9 +36,29 @@ import LiveBakeRail from '../../components/LiveBakeRail.astro';
 	<p>The living tokens (aito + Tron + Resolve + filmic) live here:</p>
 	<p><code>iterations/living-canvas/src/styles/living-tokens.css</code></p>
 
+	<div style="margin-top: 2rem; padding: 2rem; background: #111113; border-radius: 12px; border: 1px solid #222;">
+		<h3 style="margin-top:0;">Install Live Canvas</h3>
+		
+		<div style="margin: 1.25rem 0;">
+			<strong>npm</strong>
+			<pre><code>npm install -g @fornevercollective/live-canvas</code></pre>
+		</div>
+
+		<div style="margin: 1.25rem 0;">
+			<strong>Homebrew</strong>
+			<pre><code>brew install fornevercollective/tap/live-canvas</code></pre>
+		</div>
+
+		<div>
+			<a href="https://github.com/fornevercollective/aito/releases/latest" class="btn" style="display:inline-block; background:#ff5b2e; color:#000; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:600;">
+				Download latest release
+			</a>
+		</div>
+	</div>
+
 	<p style="margin-top:2rem; color:#8a8a93; font-size: 0.9rem;">
-		This is a live artifact page under the aito umbrella.<br>
-		The full high-end Living Canvas experience is an active research direction.
+		This page contains the technical research and vision. The CLI itself is the practical tool.<br>
+		Add real screenshots to <code>public/screenshots/</code> before launch.
 	</p>
 
 	<h2>Live Bake Path (vwall + Tree Walker)</h2>

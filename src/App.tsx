@@ -26,7 +26,8 @@ export default function App() {
   const setAdjustment = useApp((s) => s.setAdjustment);
   const [showAIPrompt, setShowAIPrompt] = useState(false);
   const [showTether, setShowTether] = useState(false);
-  const [isTethered, setIsTethered] = useState(false);
+  const isTethered = useApp((s) => s.isTethered);
+  const setIsTethered = useApp((s) => s.setIsTethered);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,6 +37,16 @@ export default function App() {
     const file = e.target.files?.[0];
     if (file) {
       try {
+        // When user manually loads an image, exit any live tether mode
+        // and clear stale AI animation state
+        const ws = (window as any).__aitoTether;
+        if (ws) {
+          ws.close();
+          (window as any).__aitoTether = null;
+        }
+        setIsTethered(false);
+        useApp.getState().setAi({ busy: false, progress: 0 });
+
         const loaded = await loadFile(file);
         loadImage("both", loaded); // open photo ready to edit
         // Make SAM central immediately
@@ -99,6 +110,8 @@ export default function App() {
     
     ws.onopen = () => {
       setIsTethered(true);
+      // Force slider to center so live preview is clearly visible
+      setSlider(0.5);
       console.log('[Tether] Connected to local device');
       // Send init message if needed
       ws.send(JSON.stringify({ type: 'connect', client: 'aito' }));
@@ -111,6 +124,9 @@ export default function App() {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'preview' && data.image) {
+          // Reset AI signals so the old easing animation doesn't fight the new live frame
+          useApp.getState().setAi({ busy: false, progress: 0 });
+
           // Set live preview as current 'before' image
           loadImage('both', { 
             url: data.image, 
@@ -268,38 +284,60 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (sliderDragging || !ai.busy) return;
+    // In live tether mode we control the slider manually — disable AI takeover animation
+    // to prevent it from sliding back and forth with stale preview frames
+    if (sliderDragging || !ai.busy || isTethered) return;
     const target = 1 - ai.progress * 0.5;
     const id = requestAnimationFrame(() => {
       setSlider(slider + (target - slider) * 0.08);
     });
     return () => cancelAnimationFrame(id);
-  }, [ai.busy, ai.progress, slider, sliderDragging, setSlider]);
+  }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered]);
 
   return (
     <div className="app">
       <div className="top">
         <span className="brand">aito</span>
         <span style={{fontSize: '10px', color: '#444', marginLeft: '4px'}}>live</span>
-        <a href="/aito/" className="version-link" style={{color: '#888', marginLeft: '8px'}}>hub</a>
+        <a href="/aito/hub/" className="version-link" style={{color: '#888', marginLeft: '8px'}}>hub</a>
         <span className="version-badge">main</span>
 
-        {/* Live Tether - using tricks from fornevercollective/overview live lab tools */}
-        <button 
-          className={`tether-btn ${isTethered ? 'active' : ''}`}
-          onClick={() => {
-            if (!isTethered) {
-              connectTether();
-            } else {
-              const ws = (window as any).__aitoTether;
-              if (ws) ws.close();
-              setIsTethered(false);
-            }
-          }}
-          title="Live Tether to Camera / Devices (local companion)"
-        >
-          {isTethered ? '● Tethered' : 'Tether'}
-        </button>
+        {/* Prominent clickable Live View indicator when tethered */}
+        {isTethered && (
+          <button 
+            className="live-indicator live-view-btn"
+            onClick={() => setShowTether(!showTether)}
+            title="Live tethered view — click for controls"
+          >
+            <div className="live-dot" />
+            LIVE VIEW
+          </button>
+        )}
+
+        {/* Live Tether button - only shown when not tethered (minimal) */}
+        {!isTethered && (
+          <button 
+            className="tether-btn"
+            onClick={() => setShowTether(!showTether)}
+            title="Connect Live Tether (local companion)"
+          >
+            Tether
+          </button>
+        )}
+
+        {showTether && (
+          <div className="ai-command-bar" style={{flexDirection: 'column', alignItems: 'flex-start', fontSize: '12px'}}>
+            <div>Local Tether Controls</div>
+            <button onClick={() => !isTethered && connectTether()}>Connect to Local Companion</button>
+            {isTethered && (
+              <button onClick={() => {
+                const ws = (window as any).__aitoTether;
+                if (ws) ws.close();
+                setIsTethered(false);
+              }}>Disconnect</button>
+            )}
+          </div>
+        )}
 
         {/* Minimal AI Command Bar - hidden by default, slides under top bar */}
         <button 

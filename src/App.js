@@ -1,4 +1,4 @@
-import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useRef, useState } from "react";
 import { BeforeAfter } from "./components/BeforeAfter";
 import { ControlPanel } from "./components/ui/ControlPanel";
@@ -7,6 +7,7 @@ import { AIStatus } from "./components/ui/AIStatus";
 import { connectAiChannel } from "./ai/channel";
 import { useApp } from "./state/store";
 import { loadFile } from "./lib/image";
+import { callGrokForEdits, captureCurrentImageBase64 } from "./lib/grok";
 const WS_URL = import.meta.env.VITE_AI_WS ?? "";
 export default function App() {
     const [tab, setTabState] = useState("segment");
@@ -19,12 +20,26 @@ export default function App() {
     const before = useApp((s) => s.before);
     const adjustmentScope = useApp((s) => s.adjustmentScope);
     const activeSegmentId = useApp((s) => s.activeSegmentId);
+    const setAdjustment = useApp((s) => s.setAdjustment);
+    const [showAIPrompt, setShowAIPrompt] = useState(false);
+    const [showTether, setShowTether] = useState(false);
+    const isTethered = useApp((s) => s.isTethered);
+    const setIsTethered = useApp((s) => s.setIsTethered);
     const fileInputRef = useRef(null);
     const openFile = () => fileInputRef.current?.click();
     const onFileChosen = async (e) => {
         const file = e.target.files?.[0];
         if (file) {
             try {
+                // When user manually loads an image, exit any live tether mode
+                // and clear stale AI animation state
+                const ws = window.__aitoTether;
+                if (ws) {
+                    ws.close();
+                    window.__aitoTether = null;
+                }
+                setIsTethered(false);
+                useApp.getState().setAi({ busy: false, progress: 0 });
                 const loaded = await loadFile(file);
                 loadImage("both", loaded); // open photo ready to edit
                 // Make SAM central immediately
@@ -36,6 +51,84 @@ export default function App() {
         }
         // allow re-selecting the same file
         e.target.value = "";
+    };
+    // Grok AI Command Handler - real integration
+    const handleGrokCommand = async (command) => {
+        console.log('[Grok Command]', command);
+        const apiKey = localStorage.getItem('grok_api_key') || prompt('Enter your xAI Grok API key (stored in browser):');
+        if (!apiKey)
+            return;
+        localStorage.setItem('grok_api_key', apiKey);
+        try {
+            const imageBase64 = captureCurrentImageBase64();
+            const currentAdj = useApp.getState().adjustments;
+            const result = await callGrokForEdits(apiKey, command, imageBase64, currentAdj);
+            // Apply structured response
+            if (result.adjustments) {
+                Object.entries(result.adjustments).forEach(([key, value]) => {
+                    if (typeof value === 'number') {
+                        setAdjustment(key, value);
+                    }
+                });
+            }
+            if (result.lutName) {
+                // In future: load specific LUT by name
+                setAdjustment('lutIntensity', result.intensity ?? 0.8);
+            }
+            if (result.maskPrompt && activeSegmentId) {
+                // Could trigger new SAM with the prompt (advanced)
+                console.log('Grok suggested mask:', result.maskPrompt);
+            }
+            console.log('[Grok Response]', result);
+        }
+        catch (err) {
+            console.error('Grok call failed:', err);
+            alert('Grok API error. Check key and console.');
+        }
+    };
+    // Live Tether to local devices (inspired by fornevercollective/overview live lab tools)
+    // Typical pattern: Browser connects to a local WebSocket companion (Python/Node)
+    // that talks to camera PTP/IP, Blackmagic, etc. and streams preview frames.
+    const connectTether = () => {
+        const wsUrl = prompt('Enter local tether WebSocket URL (e.g. ws://localhost:8766/tether)', 'ws://localhost:8766/tether');
+        if (!wsUrl)
+            return;
+        const ws = new WebSocket(wsUrl);
+        ws.onopen = () => {
+            setIsTethered(true);
+            // Force slider to center so live preview is clearly visible
+            setSlider(0.5);
+            console.log('[Tether] Connected to local device');
+            // Send init message if needed
+            ws.send(JSON.stringify({ type: 'connect', client: 'aito' }));
+        };
+        ws.onmessage = (event) => {
+            // Expect either:
+            // - base64 JPEG preview
+            // - binary frame
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'preview' && data.image) {
+                    // Reset AI signals so the old easing animation doesn't fight the new live frame
+                    useApp.getState().setAi({ busy: false, progress: 0 });
+                    // Set live preview as current 'before' image
+                    loadImage('both', {
+                        url: data.image,
+                        width: data.width || 1920,
+                        height: data.height || 1080
+                    });
+                }
+            }
+            catch (e) {
+                // Could be binary blob - handle as needed
+            }
+        };
+        ws.onclose = () => {
+            setIsTethered(false);
+            console.log('[Tether] Disconnected');
+        };
+        // Store ws for later control (capture, etc.)
+        window.__aitoTether = ws;
     };
     // One-time auto subject lift when user opens a fresh photo (immediate "it just works")
     const didAutoSegmentRef = useRef("");
@@ -159,15 +252,29 @@ export default function App() {
         return () => handle.close();
     }, []);
     useEffect(() => {
-        if (sliderDragging || !ai.busy)
+        // In live tether mode we control the slider manually — disable AI takeover animation
+        // to prevent it from sliding back and forth with stale preview frames
+        if (sliderDragging || !ai.busy || isTethered)
             return;
         const target = 1 - ai.progress * 0.5;
         const id = requestAnimationFrame(() => {
             setSlider(slider + (target - slider) * 0.08);
         });
         return () => cancelAnimationFrame(id);
-    }, [ai.busy, ai.progress, slider, sliderDragging, setSlider]);
-    return (_jsxs("div", { className: "app", children: [_jsxs("div", { className: "top", children: [_jsx("span", { className: "brand", children: "aito" }), _jsx("a", { href: "/aito/", className: "version-link", style: { color: '#888', marginLeft: '8px' }, children: "hub" }), _jsx("span", { className: "version-badge", children: "main" }), _jsx("button", { type: "button", className: "open-btn", onClick: openFile, children: "Open" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
+    }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered]);
+    return (_jsxs("div", { className: "app", children: [_jsxs("div", { className: "top", children: [_jsx("span", { className: "brand", children: "aito" }), _jsx("span", { style: { fontSize: '10px', color: '#444', marginLeft: '4px' }, children: "live" }), _jsx("a", { href: "/aito/", className: "version-link", style: { color: '#888', marginLeft: '8px' }, children: "hub" }), _jsx("span", { className: "version-badge", children: "main" }), isTethered && (_jsxs("button", { className: "live-indicator live-view-btn", onClick: () => setShowTether(!showTether), title: "Live tethered view \u2014 click for controls", children: [_jsx("div", { className: "live-dot" }), "LIVE VIEW"] })), !isTethered && (_jsx("button", { className: "tether-btn", onClick: () => setShowTether(!showTether), title: "Connect Live Tether (local companion)", children: "Tether" })), showTether && (_jsxs("div", { className: "ai-command-bar", style: { flexDirection: 'column', alignItems: 'flex-start', fontSize: '12px' }, children: [_jsx("div", { children: "Local Tether Controls" }), _jsx("button", { onClick: () => !isTethered && connectTether(), children: "Connect to Local Companion" }), isTethered && (_jsx("button", { onClick: () => {
+                                    const ws = window.__aitoTether;
+                                    if (ws)
+                                        ws.close();
+                                    setIsTethered(false);
+                                }, children: "Disconnect" }))] })), _jsx("button", { className: "ai-toggle-btn", onClick: () => setShowAIPrompt(!showAIPrompt), title: "Grok AI Commands", children: "AI" }), showAIPrompt && (_jsxs("div", { className: "ai-command-bar", children: [_jsx("input", { type: "text", placeholder: "grok: cinematic teal orange, high contrast, film grain", className: "ai-input", onKeyDown: (e) => {
+                                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                        handleGrokCommand(e.currentTarget.value);
+                                        e.currentTarget.value = '';
+                                    }
+                                } }), _jsx("button", { className: "ai-btn", onClick: () => {
+                                    // Trigger on the last command or focus input
+                                }, children: "Send" })] })), _jsx("button", { type: "button", className: "open-btn", onClick: openFile, children: "Open" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
                             const b = useApp.getState().before;
                             const bm = useApp.getState().beforeMeta;
                             useApp.getState().setSources(b, b, bm, bm);

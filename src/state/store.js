@@ -29,6 +29,11 @@ export const useApp = create((set) => ({
         temperature: 0,
         tint: 0,
         clarity: 0,
+        lutIntensity: 0,
+        sharpen: 0,
+        vignette: 0,
+        customLutUrl: undefined,
+        lutPreset: undefined,
     },
     adjustmentScope: {
         useActiveMask: false,
@@ -40,6 +45,7 @@ export const useApp = create((set) => ({
         hardness: 0.6,
         mode: "add",
     },
+    isTethered: false,
     bakeWalker: new BakeTreeWalker(),
     currentBakeHead: null,
     bakeHistory: [],
@@ -173,6 +179,11 @@ export const useApp = create((set) => ({
             temperature: 0,
             tint: 0,
             clarity: 0,
+            lutIntensity: 0,
+            sharpen: 0,
+            vignette: 0,
+            customLutUrl: undefined,
+            lutPreset: undefined,
         },
     }),
     setAdjustmentScope: (patch) => set((s) => ({
@@ -184,6 +195,7 @@ export const useApp = create((set) => ({
     toggleBrush: () => set((s) => ({
         brush: { ...s.brush, active: !s.brush.active },
     })),
+    setIsTethered: (v) => set({ isTethered: v }),
     // Live bake tree actions (tree-sitter walker + vwall ladder ready)
     appendBakeNode: (node) => set((s) => {
         s.bakeWalker.addNode(node);

@@ -53,8 +53,10 @@ jobs:
         run: |
           npm run build
 
-      # 2. Build Astro hub for the iterations overview (placed under /hub)
-      - name: Build Astro hub (iterations + living-canvas research)
+      # 2. Build Astro hub with base /aito/hub/ (the launch page + research)
+      - name: Build Astro hub (placed under /hub)
+        env:
+          ASTRO_BASE: /aito/hub/
         run: |
           cd site
           npm run build

@@ -112,6 +112,15 @@ export function BeforeAfter() {
         const file = e.dataTransfer.files?.[0];
         if (file && file.type.startsWith("image/")) {
             try {
+                // Exit any live tether mode and clear stale AI slider animation
+                const ws = window.__aitoTether;
+                if (ws) {
+                    ws.close();
+                    window.__aitoTether = null;
+                }
+                // Note: isTethered is local to App, but we can dispatch a reset
+                useApp.getState().setAi({ busy: false, progress: 0 });
+                useApp.getState().setIsTethered(false);
                 const loaded = await loadFile(file);
                 // Primary flow: open as new photo to edit (before + after = same)
                 loadImage("both", loaded);

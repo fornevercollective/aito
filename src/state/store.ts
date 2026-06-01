@@ -66,7 +66,9 @@ export interface AppState {
     lutIntensity: number; // 0..1 for LUT strength (AI + film emulation ready)
     sharpen: number;      // 0..2
     vignette: number;     // -1..1
-    customLutUrl?: string; // for user-uploaded Hald/CLUT images
+    // Extra non-numeric fields for LUT system (stored here for simplicity in this iteration)
+    lutPreset?: string;
+    customLutUrl?: string;
   };
 
   /** How the adjustments are scoped (core of masked corrections). */
@@ -82,6 +84,9 @@ export interface AppState {
     hardness: number;  // 0..1 (softness of falloff)
     mode: "add" | "subtract";
   };
+
+  /** Whether we're currently receiving live preview from a local tethered device (camera, etc.) */
+  isTethered: boolean;
 
   /** Live bake tree (tree-sitter style + vwall ladder integration). */
   bakeWalker: BakeTreeWalker;
@@ -113,6 +118,8 @@ export interface AppState {
 
   setAdjustment<K extends keyof AppState["adjustments"]>(key: K, value: number): void;
   resetAdjustments(): void;
+
+  setIsTethered(v: boolean): void;
 
   setAdjustmentScope(patch: Partial<AppState["adjustmentScope"]>): void;
 
@@ -167,6 +174,7 @@ export const useApp = create<AppState>((set) => ({
     sharpen: 0,
     vignette: 0,
     customLutUrl: undefined,
+    lutPreset: undefined,
   },
   adjustmentScope: {
     useActiveMask: false,
@@ -178,6 +186,7 @@ export const useApp = create<AppState>((set) => ({
     hardness: 0.6,
     mode: "add",
   },
+  isTethered: false,
   bakeWalker: new BakeTreeWalker(),
   currentBakeHead: null,
   bakeHistory: [],
@@ -335,6 +344,8 @@ export const useApp = create<AppState>((set) => ({
         lutIntensity: 0,
         sharpen: 0,
         vignette: 0,
+        customLutUrl: undefined,
+        lutPreset: undefined,
       },
     }),
 
@@ -351,6 +362,8 @@ export const useApp = create<AppState>((set) => ({
     set((s) => ({
       brush: { ...s.brush, active: !s.brush.active },
     })),
+
+  setIsTethered: (v: boolean) => set({ isTethered: v }),
 
   // Live bake tree actions (tree-sitter walker + vwall ladder ready)
   appendBakeNode: (node: BakeNode) =>

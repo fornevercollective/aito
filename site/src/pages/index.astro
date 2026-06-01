@@ -11,7 +11,7 @@ const iterations = iterationsConfig.iterations;
 		<link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>aito — AI photo retouching • iterations</title>
+		<title>aito — AI photo editing for tethered &amp; high-end workflows</title>
 		<style>
 			:root {
 				--bg: #0a0a0b;
@@ -27,93 +27,215 @@ const iterations = iterationsConfig.iterations;
 				font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, system-ui, sans-serif;
 				line-height: 1.5;
 			}
-			.container { max-width: 1080px; margin: 0 auto; padding: 2rem; }
-			header { text-align: center; padding: 4rem 0 3rem; }
-			h1 { font-size: 3.2rem; margin: 0 0 .5rem; letter-spacing: -.02em; }
-			.tagline { font-size: 1.25rem; color: var(--muted); max-width: 520px; margin: 0 auto; }
-			.iterations {
+			.container { max-width: 980px; margin: 0 auto; padding: 2rem; }
+			
+			.hero {
+				text-align: center;
+				padding: 6rem 1rem 4rem;
+			}
+			.hero h1 {
+				font-size: 4rem;
+				margin: 0 0 1rem;
+				letter-spacing: -0.03em;
+			}
+			.tagline {
+				font-size: 1.5rem;
+				color: var(--muted);
+				max-width: 520px;
+				margin: 0 auto 2rem;
+			}
+			.cta-group {
+				display: flex;
+				gap: 1rem;
+				justify-content: center;
+				margin-bottom: 1rem;
+			}
+			.btn {
+				display: inline-block;
+				padding: 14px 28px;
+				border-radius: 8px;
+				font-weight: 600;
+				text-decoration: none;
+				transition: all 0.1s ease;
+			}
+			.btn.primary {
+				background: var(--accent);
+				color: #000;
+			}
+			.btn.secondary {
+				background: #222;
+				color: #eee;
+				border: 1px solid #333;
+			}
+			.btn.secondary:hover {
+				border-color: var(--accent);
+			}
+			.subtext {
+				color: var(--muted);
+				font-size: 0.95rem;
+			}
+
+			.features {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+				gap: 2rem;
+				margin: 4rem 0;
+			}
+			.feature h3 {
+				margin: 0 0 0.5rem;
+				font-size: 1.25rem;
+			}
+			.feature p {
+				color: var(--muted);
+				margin: 0;
+			}
+
+			.cli-section {
+				margin: 5rem 0 3rem;
+				padding: 3rem;
+				background: #111113;
+				border-radius: 12px;
+				border: 1px solid #222;
+			}
+			.cli-lead {
+				font-size: 1.1rem;
+				color: var(--muted);
+				max-width: 520px;
+			}
+			.cli-install {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+				gap: 1.5rem;
+				margin-top: 1.5rem;
+			}
+			.install-block h4 {
+				margin: 0 0 0.5rem;
+				font-size: 0.95rem;
+				color: var(--muted);
+			}
+			.install-block pre {
+				background: #0a0a0b;
+				padding: 12px 16px;
+				border-radius: 6px;
+				margin: 0;
+				font-size: 0.9rem;
+			}
+			.cli-note {
+				margin-top: 1.5rem;
+				font-size: 0.9rem;
+			}
+
+			.screenshots {
+				margin: 4rem 0;
+			}
+			.screenshot-grid {
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
 				gap: 2rem;
-				margin: 3rem 0;
 			}
-			.card {
-				background: var(--card);
-				border: 1px solid rgba(255,255,255,.08);
-				border-radius: 12px;
-				padding: 2rem;
-				transition: transform .2s ease, border-color .2s ease;
+			.screenshot img {
+				width: 100%;
+				border-radius: 8px;
+				border: 1px solid #222;
+				box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 			}
-			.card:hover { transform: translateY(-4px); border-color: var(--accent); }
-			.card h2 { margin-top: 0; color: var(--accent); }
-			.card .status { font-size: .85rem; padding: .1rem .5rem; border-radius: 999px; background: rgba(255,91,46,.15); color: var(--accent); display: inline-block; margin-bottom: 1rem; }
-			.links a { color: var(--accent); text-decoration: none; }
-			.links a:hover { text-decoration: underline; }
-			footer { text-align: center; padding: 3rem 0 2rem; color: var(--muted); font-size: .9rem; }
-			.badge { font-size: .75rem; padding: 2px 8px; border-radius: 999px; background: #222; }
+			.screenshot .caption {
+				margin-top: 0.75rem;
+				font-size: 0.9rem;
+				color: var(--muted);
+				text-align: center;
+			}
+
+			footer {
+				text-align: center;
+				padding: 3rem 0 2rem;
+				color: var(--muted);
+				font-size: 0.9rem;
+			}
 		</style>
 	</head>
 	<body>
 		<div class="container">
-			<VersionSwitcher />
-			<header>
+			<header class="hero">
 				<h1>aito</h1>
 				<p class="tagline">
-					AI-driven image &amp; video retouching.<br>
-					One umbrella. Multiple iterations.
+					The AI photo editor for tethered, high-end workflows.
 				</p>
-				<div style="margin-top: 1.5rem;">
-					<a href={`${import.meta.env.BASE_URL}versions/main/`} style="background:#ff5b2e; color:#000; padding:12px 28px; border-radius:8px; font-weight:600; text-decoration:none; display:inline-block;">
-						Open Live Editor →
+				<div class="cta-group">
+					<a href="/aito/" class="btn primary">
+						Open aito
+					</a>
+					<a href="#live-canvas" class="btn secondary">
+						Get Live Canvas CLI
 					</a>
 				</div>
+				<p class="subtext">
+					Real-time AI commands. Live camera tethering. Film-accurate color.
+				</p>
 			</header>
 
-			<section>
-				<h2 style="text-align:center; margin-bottom:2rem;">Live Product</h2>
-				
-				<div class="iterations">
-					{iterations.map((iter) => (
-						<div class="card">
-							<span class="status">{iter.status.toUpperCase()} • {iter.type.toUpperCase()}</span>
-							<h2>{iter.title}</h2>
-							<p>{iter.description}</p>
-							
-							<div class="links">
-								{iter.demoPath ? (
-									<>
-										<a href={`${import.meta.env.BASE_URL}${iter.demoPath.replace(/^\//, '')}`} style="font-weight:600; font-size:1.05em">→ Open Live Editor</a>
-										<br />
-									</>
-								) : (
-									<a href="https://github.com/fornevercollective/aito">→ View on GitHub + Run Locally</a>
-								)}
-								<a href={`https://github.com/fornevercollective/aito/tree/${iter.sourceBranch}`}>Source ({iter.sourceBranch} branch)</a>
-								{iter.artifacts && iter.artifacts.length > 0 && (
-									<>
-										<br />
-										<a href={`${import.meta.env.BASE_URL}versions/${iter.id}/`}>→ View Research &amp; Proposal</a>
-									</>
-								)}
-							</div>
-						</div>
-					))}
+			<section class="features">
+				<div class="feature">
+					<h3>Live Tethering</h3>
+					<p>Connect directly to local cameras and devices. Real-time preview straight into the editor.</p>
+				</div>
+				<div class="feature">
+					<h3>AI That Actually Helps</h3>
+					<p>Grok-powered commands. Describe the look you want — adjustments, LUTs, and masking happen instantly.</p>
+				</div>
+				<div class="feature">
+					<h3>Production-Grade Tools</h3>
+					<p>Masked corrections, brush refinement, film emulation LUTs, and a proper bake history.</p>
 				</div>
 			</section>
 
-			<section style="max-width:720px; margin: 0 auto; text-align:center;">
-				<h3 style="color:var(--muted);">One repo. Multiple futures.</h3>
-				<p>
-					Both iterations share the same powerful core (Three.js EffectStage, SAM segmentation, 
-					AI signal mapper, artistic shader layers). The Living Canvas track adds a dramatically 
-					richer presentation and data layer on top.
+			<section class="screenshots">
+				<h2 style="text-align: center; margin-bottom: 2rem;">See it in action</h2>
+				<div class="screenshot-grid">
+					<div class="screenshot">
+						<img src="/screenshots/editor-main.png" alt="aito editor with before/after slider, AI prompt bar, and live tether controls" />
+						<p class="caption">The main editor — real-time AI commands + live device tethering</p>
+					</div>
+					<div class="screenshot">
+						<img src="/screenshots/lut-controls.png" alt="LUT presets and film emulation controls in aito" />
+						<p class="caption">Film emulation LUTs with VSCO, cinema, and custom looks</p>
+					</div>
+				</div>
+			</section>
+
+			<section id="live-canvas" class="cli-section">
+				<h2>Live Canvas CLI</h2>
+				<p class="cli-lead">
+					The local companion for serious tethered work. Real-time device control, advanced LUT pipelines, and live lab tooling.
+				</p>
+
+				<div class="cli-install">
+					<div class="install-block">
+						<h4>Install with npm</h4>
+						<pre><code>npm install -g @fornevercollective/live-canvas</code></pre>
+					</div>
+					<div class="install-block">
+						<h4>Install with Homebrew</h4>
+						<pre><code>brew install fornevercollective/tap/live-canvas</code></pre>
+					</div>
+					<div class="install-block">
+						<h4>Download</h4>
+						<a href="https://github.com/fornevercollective/aito/releases/latest" class="btn">macOS • Linux • Windows</a>
+					</div>
+				</div>
+
+				<p class="cli-note">
+					<a href={`${import.meta.env.BASE_URL}hub/versions/living-canvas/`}>Read the architecture &amp; research →</a>
+				</p>
+				<p style="font-size: 0.8rem; color: #555; margin-top: 1rem;">
+					(Replace placeholder screenshots in <code>/public/screenshots/</code> with real ones before launch)
 				</p>
 			</section>
 
 			<footer>
 				<p>
-					Built with Astro • Deployed via GitHub Actions<br>
-					<a href="https://github.com/fornevercollective/aito">GitHub Repository</a>
+					Open source • <a href="https://github.com/fornevercollective/aito">GitHub</a><br>
+					Built with Astro + WebGL
 				</p>
 			</footer>
 		</div>

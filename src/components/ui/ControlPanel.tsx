@@ -5,7 +5,7 @@ import type {
   EffectPropsByKind,
   EffectSide,
 } from "@/effects/types";
-import { LUT_PRESETS, applyLutPreset } from "@/lib/lutPresets";
+import { applyLutPreset } from "@/lib/lutPresets";
 
 interface AdjField {
   key: keyof ReturnType<typeof useApp.getState>["adjustments"];
@@ -114,12 +114,13 @@ export function ControlPanel() {
       <div style={{ marginBottom: 8 }}>
         {ADJ_FIELDS.map((f) => {
           const val = adj[f.key];
+          const numVal = typeof val === 'number' ? val : 0;
           return (
             <div className="row" key={f.key}>
               <label>{f.label}</label>
               <input
                 type="number"
-                value={Number.isFinite(val) ? val.toFixed(2) : "0"}
+                value={Number.isFinite(numVal) ? numVal.toFixed(2) : "0"}
                 step={f.step}
                 onChange={(e) => setAdj(f.key, Number(e.target.value))}
               />
@@ -129,7 +130,7 @@ export function ControlPanel() {
                 min={f.min}
                 max={f.max}
                 step={f.step}
-                value={val}
+                value={numVal}
                 onChange={(e) => setAdj(f.key, Number(e.target.value))}
               />
             </div>
@@ -178,9 +179,9 @@ export function ControlPanel() {
             value={adj.lutPreset || 'none'} 
             onChange={(e) => {
               const presetId = e.target.value;
-              setAdj('lutPreset', presetId);
+              (setAdj as any)('lutPreset', presetId);
               if (presetId !== 'none') {
-                applyLutPreset(presetId, setAdj);
+                applyLutPreset(presetId, setAdj as any);
               }
             }}
             style={{ width: '100%', marginBottom: 6, background: '#111', color: '#eee', border: '1px solid #333', padding: 4 }}
@@ -223,7 +224,7 @@ export function ControlPanel() {
                 const file = e.target.files?.[0];
                 if (file) {
                   const url = URL.createObjectURL(file);
-                  setAdj('customLutUrl', url);
+                  (setAdj as any)('customLutUrl', url);
                   setAdj('lutIntensity', 0.8);
                   alert('Custom LUT loaded (simulated). Full 3D sampling coming soon.');
                 }

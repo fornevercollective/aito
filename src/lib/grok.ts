@@ -94,3 +94,43 @@ export function captureCurrentImageBase64(): string {
   if (!canvas) return '';
   return canvas.toDataURL('image/jpeg', 0.85);
 }
+
+// Tool definitions for Grok (can be sent in API calls for proper tool use)
+export const AITO_GROK_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "apply_lut_preset",
+      description: "Apply a film/cinema/VSCO style LUT to the current image",
+      parameters: {
+        type: "object",
+        properties: {
+          preset: { type: "string", enum: ["vsco-kodak-portra", "cinema-teal-orange", "film-kodak-2383"] },
+          intensity: { type: "number", minimum: 0, maximum: 1 }
+        }
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_custom_lut",
+      description: "Generate a new LUT look from a text description (VSCO, film, lens, cinema)",
+      parameters: {
+        type: "object",
+        properties: {
+          description: { type: "string" },
+          baseFilm: { type: "string" }
+        }
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "tether_capture",
+      description: "Trigger a capture on the tethered local camera/device",
+      parameters: { type: "object", properties: {} }
+    }
+  }
+];
