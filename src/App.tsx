@@ -26,9 +26,12 @@ export default function App() {
   const adjustmentScope = useApp((s) => s.adjustmentScope);
   const activeSegmentId = useApp((s) => s.activeSegmentId);
   const setAdjustment = useApp((s) => s.setAdjustment);
-  useState(true); // AI prompt is now always visible in top bar (launch style)
   const isTethered = useApp((s) => s.isTethered);
   const setIsTethered = useApp((s) => s.setIsTethered);
+
+  // Mobile sheet state — enables the clean, image-first "start of the concept" experience on phones/tablets
+  // while the desktop keeps the full powerful 3-column pro layout
+  const [mobileSheet, setMobileSheet] = useState<null | 'tools' | 'inspector' | 'ai'>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -315,17 +318,21 @@ export default function App() {
         <a href="/aito/hub/" className="version-link" style={{color: '#888', marginLeft: '8px'}}>hub</a>
         <span className="version-badge">main</span>
 
-        {/* Prominent clickable LIVE VIEW indicator — opens right inspector */}
+        {/* Prominent clickable LIVE VIEW indicator */}
         {isTethered && (
           <button 
             className="live-indicator live-view-btn"
             onClick={() => {
-              // The inspector on the far right is always visible when tethered
-              // This just gives clear affordance
-              const insp = document.querySelector('.inspector');
-              insp?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              // Desktop: scroll hint (inspector always visible on right)
+              // Mobile: open the beautiful clean inspector sheet
+              if (window.innerWidth < 920) {
+                setMobileSheet('inspector');
+              } else {
+                const insp = document.querySelector('.inspector');
+                insp?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
             }}
-            title="Live tethered view — controls & EXIF on the right"
+            title="Live tethered view — controls & EXIF"
           >
             <div className="live-dot" />
             LIVE VIEW
@@ -431,6 +438,96 @@ export default function App() {
       <Inspector />
 
       <AIStatus />
+
+      {/* =====================================================
+         MOBILE BOTTOM BAR + SHEETS
+         This is the "start of the concept" experience on phones
+         and tablets: clean, image-first, our exact dark minimal style.
+         The full power is one tap away in elegant sheets.
+         ===================================================== */}
+      <div className="mobile-bottom-bar">
+        <button onClick={() => setMobileSheet('ai')} title="AI / Grok">
+          <span className="icon">✦</span>
+          <span>AI</span>
+        </button>
+        <button onClick={() => setMobileSheet('tools')} title="Tools & masks">
+          <span className="icon">◐</span>
+          <span>Tools</span>
+        </button>
+        <button 
+          onClick={() => setMobileSheet('inspector')} 
+          className={isTethered ? 'active' : ''}
+          title="Tether + Metadata"
+        >
+          <span className="icon">⬡</span>
+          <span>{isTethered ? 'LIVE' : 'Info'}</span>
+        </button>
+        <button onClick={() => void exportCurrent()} title="Export">
+          <span className="icon">↓</span>
+          <span>Export</span>
+        </button>
+      </div>
+
+      {/* Mobile sheets — slide up, same aesthetic as the rest of aito */}
+      {mobileSheet && (
+        <div className={`mobile-sheet ${mobileSheet ? 'open' : ''}`}>
+          <div className="mobile-sheet-header">
+            <div className="title">
+              {mobileSheet === 'ai' && 'AI Command'}
+              {mobileSheet === 'tools' && 'Tools & Masking'}
+              {mobileSheet === 'inspector' && (isTethered ? 'Live Tether + Metadata' : 'Metadata')}
+            </div>
+            <button className="close" onClick={() => setMobileSheet(null)}>×</button>
+          </div>
+
+          <div className="mobile-sheet-content">
+            {mobileSheet === 'ai' && (
+              <>
+                <input
+                  type="text"
+                  className="mobile-ai-input"
+                  placeholder="Describe the look for Grok (film, exposure, mask, LUT...)"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      handleGrokCommand(e.currentTarget.value);
+                      e.currentTarget.value = '';
+                      setMobileSheet(null);
+                    }
+                  }}
+                  autoFocus
+                />
+                <div style={{ color: '#555', fontSize: '12px', lineHeight: 1.4 }}>
+                  Grok sees the current image and applies adjustments, LUTs, or masking instantly.
+                </div>
+              </>
+            )}
+
+            {mobileSheet === 'tools' && (
+              <>
+                <div className="tabs" style={{ marginBottom: 12 }}>
+                  {(["segment", "batch", "effects"] as Tab[]).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      className={tab === t ? "active" : ""}
+                      onClick={() => setTabState(t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                {tab === "effects" && <ControlPanel />}
+                {tab === "segment" && <SegmentPanel />}
+                {tab === "batch" && <BatchPanel />}
+              </>
+            )}
+
+            {mobileSheet === 'inspector' && (
+              <Inspector />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

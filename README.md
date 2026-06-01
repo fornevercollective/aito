@@ -1,9 +1,21 @@
-# aito (Umbrella)
+# aito
 
-**One repository. Multiple iterations.**
+**AI photo editing for tethered, high-end workflows.**
 
-**[→ Live demo](https://fornevercollective.github.io/aito/)** — the editor loads at the root.  
-**[Hub & iterations](https://fornevercollective.github.io/aito/hub/)** — all tracks in one place.
+**Desktop pro. Mobile PWA. One beautiful minimal interface.**
+
+- Real-time Grok commands (adjustments, LUTs, masking)
+- Live camera tethering via local companion (Canon, Sony, Phase One, etc.)
+- Film-accurate LUTs + custom .cube support
+- SAM-powered masked corrections + pressure-sensitive brush
+- Hatch export (subject / background / full)
+- Works as a beautiful mobile PWA on iPhone and Android
+
+**[Open the editor](https://fornevercollective.github.io/aito/)** — installs as PWA  
+**[Hub, iterations & mobile notes](https://fornevercollective.github.io/aito/hub/)**  
+**[Brand](https://fornevercollective.github.io/aito/brand/) · [Pricing](https://fornevercollective.github.io/aito/pricing/) · [License](https://fornevercollective.github.io/aito/license/)**
+
+One repo. Two tracks. The editor is the product.
 
 ### In action
 
@@ -33,7 +45,7 @@
 - **Main track** — Production photo editor (masked corrections, brush, hatch export, WebGL artistic layers).
 - **Living Canvas pivot** — High-end research track exploring vwall patterns + cinematic HUD interfaces (Gmunk/Tron/Resolve/VSCO).
 
-See [versions/](./versions) for the different iterations/forks and the [Astro test site](./site) for the public hub.
+See [versions/](./versions) for the research tracks (including the vwall Living Canvas pivot) and the live site for the current product experience.
 
 ---
 
@@ -42,6 +54,19 @@ before/after slider with six AI-controllable WebGL effect layers
 (sampling, unfocused, burn, glass, magnifier, crack), wired to a
 WebSocket inference channel with a built-in mock so it runs
 standalone.
+
+## Mobile PWA
+
+aito is a first-class Progressive Web App. On iPhone or Android:
+
+1. Open https://fornevercollective.github.io/aito/ in Safari or Chrome
+2. Tap Share → "Add to Home Screen"
+
+You get the full editor (slider, AI prompt, brush, tether controls) with native install feel and offline shell support.
+
+The interface adapts automatically:
+- Desktop → powerful 3-column layout with permanent inspector
+- Mobile/Tablet → image-first with elegant bottom bar + slide-up sheets
 
 ## Run (recommended)
 

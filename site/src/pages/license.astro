@@ -1,0 +1,40 @@
+---
+import VersionSwitcher from '../components/VersionSwitcher.astro';
+---
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+	<title>License — aito</title>
+	<style>
+		body { background:#0a0a0b; color:#e7e7ea; font-family: system-ui, sans-serif; padding: 2rem; max-width: 760px; margin: 0 auto; line-height: 1.7; }
+		h1 { color: #ff5b2e; }
+		a { color: #ff5b2e; }
+		pre { background:#111; padding:1.25rem; border-radius:6px; overflow:auto; }
+	</style>
+</head>
+<body>
+	<VersionSwitcher />
+	<h1>License</h1>
+	<p><a href={`${import.meta.env.BASE_URL}`}>← Back to aito</a></p>
+
+	<h2>aito Editor</h2>
+	<p>Copyright (c) 2025–2026 fornevercollective</p>
+
+	<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+
+	<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+	<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+	<p>Portions of the visual language and interaction patterns are inspired by earlier work in the creative tooling space. All original code is released under the terms above.</p>
+
+	<h2>Third-party</h2>
+	<p>aito depends on several excellent open source projects (React, Three.js, Zustand, etc.). Their individual licenses apply.</p>
+
+	<p style="margin-top:3rem; color:#666; font-size:0.9rem;">
+		For the latest version of this license, see the repository.
+	</p>
+</body>
+</html>

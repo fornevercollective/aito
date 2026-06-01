@@ -11,7 +11,7 @@ const iterations = iterationsConfig.iterations;
 		<link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>aito — AI photo editing for tethered &amp; high-end workflows</title>
+		<title>aito — AI photo editing. Desktop pro. Mobile PWA.</title>
 		<style>
 			:root {
 				--bg: #0a0a0b;
@@ -207,7 +207,8 @@ const iterations = iterationsConfig.iterations;
 					</a>
 				</div>
 				<p class="subtext">
-					Real-time Grok commands. Live camera tethering. Proper film emulation.
+					Real-time Grok commands. Live camera tethering. Proper film emulation.<br>
+					<strong>Works beautifully on desktop and as a mobile PWA.</strong>
 				</p>
 			</header>
 
@@ -230,20 +231,20 @@ const iterations = iterationsConfig.iterations;
 				<h2 style="text-align: center; margin-bottom: 2rem;">See it in action</h2>
 				<div class="screenshot-grid">
 					<div class="screenshot">
-						<img src={`${import.meta.env.BASE_URL}screenshots/editor-main.jpg`} alt="aito editor interface showing before/after slider, AI prompt bar, and active LIVE VIEW tether indicator" />
-						<p class="caption">The main editor with real-time AI prompt bar and live tethered camera input</p>
+						<img src={`${import.meta.env.BASE_URL}screenshots/desktop-hero.jpg`} alt="aito desktop editor with 3-column layout: main before/after slider, tools panel, and right inspector showing live tether controls + EXIF metadata" />
+						<p class="caption">Desktop pro layout — full 3-column with tether inspector and EXIF on the right</p>
 					</div>
 					<div class="screenshot">
-						<img src={`${import.meta.env.BASE_URL}screenshots/lut-film.jpg`} alt="LUT film emulation controls with Kodak Portra and cinema presets applied to a landscape" />
-						<p class="caption">Production film emulation LUTs — VSCO, Kodak, Fuji, and custom cinema looks</p>
+						<img src={`${import.meta.env.BASE_URL}screenshots/mobile-pwa.jpg`} alt="aito running as mobile PWA on iPhone with bottom action bar and open AI command sheet" />
+						<p class="caption">Mobile PWA — clean image-first experience with bottom sheets for AI, tools, and live tether</p>
 					</div>
 					<div class="screenshot">
-						<img src={`${import.meta.env.BASE_URL}screenshots/tether-live.jpg`} alt="Live tethered mode with pulsing LIVE VIEW badge and tether control panel open" />
-						<p class="caption">Live tethered capture with clickable LIVE VIEW indicator and direct camera controls</p>
+						<img src={`${import.meta.env.BASE_URL}screenshots/lut-desktop.jpg`} alt="aito LUT film emulation controls open in the right panel with strong cinematic grade on landscape" />
+						<p class="caption">Film emulation LUTs with live preview across VSCO, Kodak, Fuji and cinema looks</p>
 					</div>
 					<div class="screenshot">
-						<img src={`${import.meta.env.BASE_URL}screenshots/brush-mask.jpg`} alt="Brush refinement tool painting on an active subject mask with soft edge preview" />
-						<p class="caption">AI-assisted masking with precise brush refinement for selective corrections</p>
+						<img src={`${import.meta.env.BASE_URL}screenshots/brush-refine.jpg`} alt="aito brush refinement active on a subject mask with hardness controls visible" />
+						<p class="caption">Precise brush refinement on AI-generated masks</p>
 					</div>
 				</div>
 			</section>
@@ -307,8 +308,10 @@ const iterations = iterationsConfig.iterations;
 
 			<footer>
 				<p>
-					Open source • <a href="https://github.com/fornevercollective/aito">GitHub</a> • <a href={`${import.meta.env.BASE_URL}hub/`}>Hub &amp; iterations</a><br>
-					Requires a modern browser + Node 22+ for the CLI companion.
+					Open source • <a href="https://github.com/fornevercollective/aito">GitHub</a> • <a href={`${import.meta.env.BASE_URL}hub/`}>Hub</a> • <a href={`${import.meta.env.BASE_URL}brand/`}>Brand</a> • <a href={`${import.meta.env.BASE_URL}pricing/`}>Pricing</a> • <a href={`${import.meta.env.BASE_URL}license/`}>License</a>
+				</p>
+				<p style="margin-top:0.6rem; font-size:0.82rem; color:#555;">
+					Install aito as a PWA on iOS or Android for the full mobile experience.
 				</p>
 			</footer>
 		</div>

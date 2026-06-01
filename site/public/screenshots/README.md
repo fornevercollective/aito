@@ -39,14 +39,16 @@ This folder holds the final screenshots used on the aito launch site.
 - Compress with ImageOptim or Squoosh before committing.
 - Update the `alt` text in `index.astro` when you replace the placeholders.
 
-## Current Launch Screenshots (as of May 2026)
+## Current Launch Screenshots (accurate to current UI)
 
-These four images power the main launch page at the root:
+These images reflect the actual shipping interface (desktop 3-column + mobile PWA sheets):
 
-- `editor-main.jpg` — Hero editor view with prompt bar + LIVE VIEW tether badge
-- `lut-film.jpg` — LUT panel + film emulation before/after
-- `tether-live.jpg` — Tethered live mode with controls panel
-- `brush-mask.jpg` — Active mask + brush refinement
+- `desktop-hero.jpg` — Full desktop layout with inspector (tether + EXIF)
+- `mobile-pwa.jpg` — iPhone PWA with bottom bar + open AI sheet
+- `lut-desktop.jpg` — LUT controls in the real right panel
+- `brush-refine.jpg` — Brush + mask in current UI
+
+Old mocks have been replaced with higher-fidelity generations that match the real code.
 
 All are high-quality mockups at ~1920×1080 (16:9) representing the final aesthetic. They will be replaced with real captures from the shipping app before any public announcement.
 

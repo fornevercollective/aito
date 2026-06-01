@@ -9,3 +9,12 @@ root.render(
     <App />
   </React.StrictMode>,
 );
+
+// Register PWA service worker for offline + install on mobile
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Silent fail in dev or when not available
+    });
+  });
+}
