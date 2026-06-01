@@ -104,6 +104,7 @@ function Layers() {
             uTemperature: { value: adj.temperature },
             uTint: { value: adj.tint },
             uClarity: { value: adj.clarity },
+            uLutIntensity: { value: adj.lutIntensity ?? 0 },
             uMask: { value: maskTex },
             uUseMask: { value: scope.useActiveMask && activeMaskUrl ? 1 : 0 },
             uInvertMask: { value: scope.invert ? 1 : 0 },

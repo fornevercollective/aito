@@ -63,6 +63,9 @@ export interface AppState {
     temperature: number; // -1 (cool) .. +1 (warm)
     tint: number;       // -1 (green) .. +1 (magenta)
     clarity: number;    // -1 .. +1 (local contrast approx)
+    lutIntensity: number; // 0..1 for LUT strength (AI + film emulation ready)
+    sharpen: number;      // 0..2
+    vignette: number;     // -1..1
   };
 
   /** How the adjustments are scoped (core of masked corrections). */
@@ -159,6 +162,9 @@ export const useApp = create<AppState>((set) => ({
     temperature: 0,
     tint: 0,
     clarity: 0,
+    lutIntensity: 0,
+    sharpen: 0,
+    vignette: 0,
   },
   adjustmentScope: {
     useActiveMask: false,
@@ -324,6 +330,9 @@ export const useApp = create<AppState>((set) => ({
         temperature: 0,
         tint: 0,
         clarity: 0,
+        lutIntensity: 0,
+        sharpen: 0,
+        vignette: 0,
       },
     }),
 

@@ -165,6 +165,39 @@ export function ControlPanel() {
             Use Segment tab to tap/auto subjects. Corrections only affect the selected region.
           </div>
         </div>
+
+        {/* LUT Support - AI + Krea-style realtime color grading */}
+        <div style={{ marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 4 }}>LUT (Film Emulation)</div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.01" 
+              value={adj.lutIntensity ?? 0} 
+              onChange={(e) => setAdj('lutIntensity', parseFloat(e.target.value))} 
+              style={{flex: 1}}
+            />
+            <span style={{width: 32, fontSize: 11}}>{((adj.lutIntensity ?? 0) * 100).toFixed(0)}%</span>
+          </div>
+          <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>
+            Upload .cube or Hald CLUT (coming in next iteration). Grok can suggest LUTs from prompts.
+          </div>
+        </div>
+
+        {/* Additional Pro Tools */}
+        <div style={{ marginTop: 8 }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 4 }}>More Tools</div>
+          <div className="row">
+            <label>Sharpen</label>
+            <input type="range" min="0" max="2" step="0.05" value={adj.sharpen ?? 0} onChange={(e) => setAdj('sharpen', parseFloat(e.target.value))} />
+          </div>
+          <div className="row">
+            <label>Vignette</label>
+            <input type="range" min="-1" max="1" step="0.05" value={adj.vignette ?? 0} onChange={(e) => setAdj('vignette', parseFloat(e.target.value))} />
+          </div>
+        </div>
       </div>
 
       <h3>Add layer</h3>

@@ -7,8 +7,8 @@ const iterations = iterationsConfig.iterations;
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+		<link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>aito — AI photo retouching • iterations</title>
@@ -62,10 +62,15 @@ const iterations = iterationsConfig.iterations;
 					AI-driven image &amp; video retouching.<br>
 					One umbrella. Multiple iterations.
 				</p>
+				<div style="margin-top: 1.5rem;">
+					<a href={`${import.meta.env.BASE_URL}versions/main/`} style="background:#ff5b2e; color:#000; padding:12px 28px; border-radius:8px; font-weight:600; text-decoration:none; display:inline-block;">
+						Open Live Editor →
+					</a>
+				</div>
 			</header>
 
 			<section>
-				<h2 style="text-align:center; margin-bottom:2rem;">Active Iterations</h2>
+				<h2 style="text-align:center; margin-bottom:2rem;">Live Product</h2>
 				
 				<div class="iterations">
 					{iterations.map((iter) => (
@@ -76,16 +81,18 @@ const iterations = iterationsConfig.iterations;
 							
 							<div class="links">
 								{iter.demoPath ? (
-									<a href={`${import.meta.env.BASE_URL}${iter.demoPath.replace(/^\//, '')}`}>→ Open Live Demo</a>
+									<>
+										<a href={`${import.meta.env.BASE_URL}${iter.demoPath.replace(/^\//, '')}`} style="font-weight:600; font-size:1.05em">→ Open Live Editor</a>
+										<br />
+									</>
 								) : (
 									<a href="https://github.com/fornevercollective/aito">→ View on GitHub + Run Locally</a>
 								)}
-								<br />
 								<a href={`https://github.com/fornevercollective/aito/tree/${iter.sourceBranch}`}>Source ({iter.sourceBranch} branch)</a>
 								{iter.artifacts && iter.artifacts.length > 0 && (
 									<>
 										<br />
-										<a href={`${import.meta.env.BASE_URL}versions/${iter.id}/`}>→ View Artifacts</a>
+										<a href={`${import.meta.env.BASE_URL}versions/${iter.id}/`}>→ View Research &amp; Proposal</a>
 									</>
 								)}
 							</div>

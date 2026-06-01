@@ -17,6 +17,7 @@ export const ADJUST_FRAG = /* glsl */ `
   uniform float uTemperature; // -1..1  (blue <-> yellow)
   uniform float uTint;        // -1..1  (green <-> magenta)
   uniform float uClarity;     // -1..1  (local contrast)
+  uniform float uLutIntensity; // 0..1  LUT strength (AI + film emulation ready)
   uniform sampler2D uMask;    // optional active SAM/brush mask (alpha = selection)
   uniform float uUseMask;     // 0 = ignore mask (full image), 1 = use mask
   uniform float uInvertMask;  // 0 = normal, 1 = invert (apply to background)
@@ -88,6 +89,14 @@ export const ADJUST_FRAG = /* glsl */ `
     // Clarity (local contrast)
     if (abs(effClarity) > 0.001) {
       c += clarityMask(vUv, effClarity);
+    }
+
+    // LUT placeholder (AI/Grok can drive intensity + future LUT selection)
+    if (uLutIntensity > 0.001) {
+      // TODO: Sample actual 3D/2D LUT texture here
+      // For now: simple stylized shift to simulate film LUT
+      float lutMix = uLutIntensity;
+      c = mix(c, vec3(c.r * 0.9 + 0.1, c.g * 1.05, c.b * 0.85), lutMix * 0.6);
     }
 
     gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);

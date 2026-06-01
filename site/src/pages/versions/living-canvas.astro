@@ -33,13 +33,20 @@ import LiveBakeRail from '../../components/LiveBakeRail.astro';
 	<p>The living tokens (aito + Tron + Resolve + filmic) live here:</p>
 	<p><code>iterations/living-canvas/src/styles/living-tokens.css</code></p>
 
-	<p style="margin-top:3rem; color:#8a8a93;">
-		This page is part of the static Astro umbrella site. The actual experimental code can live in a branch or in this folder.
+	<p style="margin-top:2rem; color:#8a8a93; font-size: 0.9rem;">
+		This is a live artifact page under the aito umbrella.<br>
+		The full high-end Living Canvas experience is an active research direction.
 	</p>
 
 	<h2>Live Bake Path (vwall + Tree Walker)</h2>
 	<p>One of the key technical explorations in this track is an incremental bake system using a tree-sitter-style edit graph + vwall MediaLadder patterns for efficient variant storage and LOD previews.</p>
 	
 	<LiveBakeRail />
+
+	<div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #222;">
+		<a href={`${import.meta.env.BASE_URL}versions/main/`} style="color: #ff5b2e; text-decoration: none; font-weight: 500;">
+			→ Try the current Main Editor →
+		</a>
+	</div>
 </body>
 </html>

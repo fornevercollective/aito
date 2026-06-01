@@ -167,7 +167,7 @@ export default function App() {
         });
         return () => cancelAnimationFrame(id);
     }, [ai.busy, ai.progress, slider, sliderDragging, setSlider]);
-    return (_jsxs("div", { className: "app", children: [_jsxs("div", { className: "top", children: [_jsx("span", { className: "brand", children: "aito" }), _jsx("span", { className: "version-badge", children: "main" }), _jsx("a", { href: "/versions/living-canvas/", className: "version-link", title: "View the Living Canvas pivot", children: "living-canvas" }), _jsx("button", { type: "button", className: "open-btn", onClick: openFile, children: "Open" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
+    return (_jsxs("div", { className: "app", children: [_jsxs("div", { className: "top", children: [_jsx("span", { className: "brand", children: "aito" }), _jsx("a", { href: "/aito/", className: "version-link", style: { color: '#888', marginLeft: '8px' }, children: "hub" }), _jsx("span", { className: "version-badge", children: "main" }), _jsx("button", { type: "button", className: "open-btn", onClick: openFile, children: "Open" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
                             const b = useApp.getState().before;
                             const bm = useApp.getState().beforeMeta;
                             useApp.getState().setSources(b, b, bm, bm);

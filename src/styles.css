@@ -64,6 +64,84 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 .top .version-link:hover {
   text-decoration: underline;
 }
+
+/* Minimal AI Command Bar - hides cleanly under top bar */
+.top .ai-toggle-btn {
+  background: #222;
+  color: #ff5b2e;
+  border: 1px solid #444;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 12px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.top .ai-toggle-btn:hover {
+  background: #ff5b2e;
+  color: #000;
+  border-color: #ff5b2e;
+}
+
+.top .ai-command-bar {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #0a0a0b;
+  border-bottom: 1px solid #222;
+  padding: 8px 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+
+.top .ai-input {
+  flex: 1;
+  background: #111;
+  border: 1px solid #333;
+  color: #eee;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+.top .ai-input:focus {
+  border-color: #ff5b2e;
+}
+
+.top .ai-btn {
+  background: #ff5b2e;
+  color: #000;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Live Tether button */
+.top .tether-btn {
+  background: #1a2a1a;
+  color: #4ade80;
+  border: 1px solid #225522;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+.top .tether-btn.active {
+  background: #4ade80;
+  color: #000;
+  border-color: #4ade80;
+}
 .top .top-btn {
   background: #222;
   color: #ddd;

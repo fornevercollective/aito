@@ -22,6 +22,10 @@ export default function App() {
   const before = useApp((s) => s.before);
   const adjustmentScope = useApp((s) => s.adjustmentScope);
   const activeSegmentId = useApp((s) => s.activeSegmentId);
+  const setAdjustment = useApp((s) => s.setAdjustment);
+  const [showAIPrompt, setShowAIPrompt] = useState(false);
+  const [showTether, setShowTether] = useState(false);
+  const [isTethered, setIsTethered] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,6 +45,81 @@ export default function App() {
     }
     // allow re-selecting the same file
     e.target.value = "";
+  };
+
+  // Grok AI Command Handler - designed for real-time + structured edits
+  const handleGrokCommand = (command: string) => {
+    console.log('[Grok Command]', command);
+    
+    // Simple local heuristics for now (will be replaced with real Grok API)
+    const lower = command.toLowerCase();
+    
+    if (lower.includes('teal') || lower.includes('cinematic')) {
+      setAdjustment('temperature', 0.35);
+      setAdjustment('tint', -0.25);
+      setAdjustment('contrast', 0.25);
+      setAdjustment('saturation', 0.15);
+    }
+    
+    if (lower.includes('high contrast') || lower.includes('punchy')) {
+      setAdjustment('contrast', 0.4);
+    }
+    
+    if (lower.includes('film') || lower.includes('grain')) {
+      setAdjustment('lutIntensity', 0.65);
+    }
+    
+    if (lower.includes('warm') || lower.includes('golden')) {
+      setAdjustment('temperature', 0.6);
+    }
+    
+    // Future: Send full command + current adjustments + image to Grok for structured response
+    // Example response shape we want from Grok:
+    // { adjustments: {...}, lut: "kodak-2383", maskPrompt: "subject", intensity: 0.8 }
+  };
+
+  // Live Tether to local devices (inspired by fornevercollective/overview live lab tools)
+  // Typical pattern: Browser connects to a local WebSocket companion (Python/Node)
+  // that talks to camera PTP/IP, Blackmagic, etc. and streams preview frames.
+  const connectTether = () => {
+    const wsUrl = prompt('Enter local tether WebSocket URL (e.g. ws://localhost:8766/tether)', 'ws://localhost:8766/tether');
+    if (!wsUrl) return;
+
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+      setIsTethered(true);
+      console.log('[Tether] Connected to local device');
+      // Send init message if needed
+      ws.send(JSON.stringify({ type: 'connect', client: 'aito' }));
+    };
+
+    ws.onmessage = (event) => {
+      // Expect either:
+      // - base64 JPEG preview
+      // - binary frame
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'preview' && data.image) {
+          // Set live preview as current 'before' image
+          loadImage('both', { 
+            url: data.image, 
+            width: data.width || 1920, 
+            height: data.height || 1080 
+          });
+        }
+      } catch (e) {
+        // Could be binary blob - handle as needed
+      }
+    };
+
+    ws.onclose = () => {
+      setIsTethered(false);
+      console.log('[Tether] Disconnected');
+    };
+
+    // Store ws for later control (capture, etc.)
+    (window as any).__aitoTether = ws;
   };
 
   // One-time auto subject lift when user opens a fresh photo (immediate "it just works")
@@ -191,8 +270,59 @@ export default function App() {
     <div className="app">
       <div className="top">
         <span className="brand">aito</span>
+        <span style={{fontSize: '10px', color: '#444', marginLeft: '4px'}}>live</span>
+        <a href="/aito/" className="version-link" style={{color: '#888', marginLeft: '8px'}}>hub</a>
         <span className="version-badge">main</span>
-        <a href="/aito/versions/living-canvas/" className="version-link" title="View the Living Canvas pivot">living-canvas</a>
+
+        {/* Live Tether - using tricks from fornevercollective/overview live lab tools */}
+        <button 
+          className={`tether-btn ${isTethered ? 'active' : ''}`}
+          onClick={() => {
+            if (!isTethered) {
+              connectTether();
+            } else {
+              const ws = (window as any).__aitoTether;
+              if (ws) ws.close();
+              setIsTethered(false);
+            }
+          }}
+          title="Live Tether to Camera / Devices (local companion)"
+        >
+          {isTethered ? '● Tethered' : 'Tether'}
+        </button>
+
+        {/* Minimal AI Command Bar - hidden by default, slides under top bar */}
+        <button 
+          className="ai-toggle-btn" 
+          onClick={() => setShowAIPrompt(!showAIPrompt)}
+          title="Grok AI Commands"
+        >
+          AI
+        </button>
+
+        {showAIPrompt && (
+          <div className="ai-command-bar">
+            <input 
+              type="text" 
+              placeholder="grok: cinematic teal orange, high contrast, film grain" 
+              className="ai-input"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                  handleGrokCommand(e.currentTarget.value);
+                  e.currentTarget.value = '';
+                }
+              }}
+            />
+            <button 
+              className="ai-btn" 
+              onClick={() => {
+                // Trigger on the last command or focus input
+              }}
+            >
+              Send
+            </button>
+          </div>
+        )}
         <button type="button" className="open-btn" onClick={openFile}>
           Open
         </button>
