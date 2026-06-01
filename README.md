@@ -2,6 +2,34 @@
 
 **One repository. Multiple iterations.**
 
+**[→ Live demo](https://fornevercollective.github.io/aito/)** — the editor loads at the root.  
+**[Hub & iterations](https://fornevercollective.github.io/aito/hub/)** — all tracks in one place.
+
+### In action
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="site/public/screenshots/editor-main.jpg" width="100%" alt="aito editor with AI prompt bar and LIVE VIEW tether indicator">
+<br><sub>Main editor — prompt bar + live tethered capture</sub>
+</td>
+<td align="center" width="50%">
+<img src="site/public/screenshots/lut-film.jpg" width="100%" alt="LUT film emulation controls with Kodak Portra and cinema looks">
+<br><sub>Film emulation LUTs — VSCO, Kodak, Fuji, cinema presets</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+<img src="site/public/screenshots/tether-live.jpg" width="100%" alt="Live tethered mode with pulsing LIVE VIEW badge and tether controls">
+<br><sub>Live tethering — clickable LIVE VIEW + direct camera controls</sub>
+</td>
+<td align="center" width="50%">
+<img src="site/public/screenshots/brush-mask.jpg" width="100%" alt="Brush refinement on an active AI subject mask">
+<br><sub>AI masking + precise brush refinement</sub>
+</td>
+</tr>
+</table>
+
 - **Main track** — Production photo editor (masked corrections, brush, hatch export, WebGL artistic layers).
 - **Living Canvas pivot** — High-end research track exploring vwall patterns + cinematic HUD interfaces (Gmunk/Tron/Resolve/VSCO).
 

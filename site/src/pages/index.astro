@@ -146,6 +146,40 @@ const iterations = iterationsConfig.iterations;
 				text-align: center;
 			}
 
+			.screenshot-placeholder {
+				width: 100%;
+				aspect-ratio: 16 / 10;
+				background: linear-gradient(145deg, #111113 0%, #0a0a0b 100%);
+				border: 1px solid #222;
+				border-radius: 8px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: #555;
+				font-size: 0.95rem;
+				font-family: monospace;
+			}
+
+			.tools {
+				margin: 4rem 0 3rem;
+			}
+			.tool-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+				gap: 1.75rem 2rem;
+			}
+			.tool h4 {
+				margin: 0 0 0.35rem;
+				font-size: 1rem;
+				color: #fff;
+			}
+			.tool p {
+				margin: 0;
+				color: var(--muted);
+				font-size: 0.92rem;
+				line-height: 1.55;
+			}
+
 			footer {
 				text-align: center;
 				padding: 3rem 0 2rem;
@@ -159,7 +193,7 @@ const iterations = iterationsConfig.iterations;
 			<header class="hero">
 				<h1>aito</h1>
 				<p class="tagline">
-					The AI photo editor for tethered, high-end workflows.
+					AI photo editing, built for the way you actually work.
 				</p>
 				<div class="cta-group">
 					<a href="/aito/" class="btn primary">
@@ -168,9 +202,12 @@ const iterations = iterationsConfig.iterations;
 					<a href="#live-canvas" class="btn secondary">
 						Get Live Canvas CLI
 					</a>
+					<a href={`${import.meta.env.BASE_URL}hub/`} class="btn secondary">
+						Hub &amp; iterations
+					</a>
 				</div>
 				<p class="subtext">
-					Real-time AI commands. Live camera tethering. Film-accurate color.
+					Real-time Grok commands. Live camera tethering. Proper film emulation.
 				</p>
 			</header>
 
@@ -193,29 +230,68 @@ const iterations = iterationsConfig.iterations;
 				<h2 style="text-align: center; margin-bottom: 2rem;">See it in action</h2>
 				<div class="screenshot-grid">
 					<div class="screenshot">
-						<img src="/screenshots/editor-main.png" alt="aito editor with before/after slider, AI prompt bar, and live tether controls" />
-						<p class="caption">The main editor — real-time AI commands + live device tethering</p>
+						<img src={`${import.meta.env.BASE_URL}screenshots/editor-main.jpg`} alt="aito editor interface showing before/after slider, AI prompt bar, and active LIVE VIEW tether indicator" />
+						<p class="caption">The main editor with real-time AI prompt bar and live tethered camera input</p>
 					</div>
 					<div class="screenshot">
-						<img src="/screenshots/lut-controls.png" alt="LUT presets and film emulation controls in aito" />
-						<p class="caption">Film emulation LUTs with VSCO, cinema, and custom looks</p>
+						<img src={`${import.meta.env.BASE_URL}screenshots/lut-film.jpg`} alt="LUT film emulation controls with Kodak Portra and cinema presets applied to a landscape" />
+						<p class="caption">Production film emulation LUTs — VSCO, Kodak, Fuji, and custom cinema looks</p>
+					</div>
+					<div class="screenshot">
+						<img src={`${import.meta.env.BASE_URL}screenshots/tether-live.jpg`} alt="Live tethered mode with pulsing LIVE VIEW badge and tether control panel open" />
+						<p class="caption">Live tethered capture with clickable LIVE VIEW indicator and direct camera controls</p>
+					</div>
+					<div class="screenshot">
+						<img src={`${import.meta.env.BASE_URL}screenshots/brush-mask.jpg`} alt="Brush refinement tool painting on an active subject mask with soft edge preview" />
+						<p class="caption">AI-assisted masking with precise brush refinement for selective corrections</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="tools">
+				<h2 style="text-align: center; margin-bottom: 2rem;">Key tools</h2>
+				<div class="tool-grid">
+					<div class="tool">
+						<h4>AI Prompt Bar</h4>
+						<p>Command the editor in plain language. Grok sees the current image + bake graph and returns structured edits (adjustments, LUT choice, mask prompt, intensity). Changes land as nodes in the non-destructive history.</p>
+					</div>
+					<div class="tool">
+						<h4>Live Tethering</h4>
+						<p>Bidirectional WebSocket to a local companion (exact pattern used in the fornevercollective live lab tools). Camera frames stream in real time; send ISO, shutter, and capture commands from the browser. The glowing “LIVE VIEW” badge in the top bar is the single source of truth while tethered — click it to open controls.</p>
+					</div>
+					<div class="tool">
+						<h4>Film Emulation LUTs</h4>
+						<p>Curated library across VSCO, Kodak (Portra 400/160, 2383), Fuji (Superia, 3510), cinema (Teal &amp; Orange, Bleach Bypass), and lens looks. Load your own .cube or Hald CLUT files. Per-layer intensity slider with instant preview.</p>
+					</div>
+					<div class="tool">
+						<h4>Masked Corrections</h4>
+						<p>SAM-powered subject / background masks drive the full adjustment stack: exposure, contrast, saturation, temperature, tint, clarity, vignette, sharpen, and lutIntensity. Every control respects the active mask and scope toggles.</p>
+					</div>
+					<div class="tool">
+						<h4>Brush Refinement</h4>
+						<p>Soft, pressure-sensitive brush with adjustable hardness. Paint directly on the mask to add or remove areas. Brush strokes are first-class nodes in the bake tree — fully revisable.</p>
+					</div>
+					<div class="tool">
+						<h4>Hatch Export &amp; Bake Tree</h4>
+						<p>Export Subject only, Background only, or full composite with the diagnostic hatch overlay for easy keying in Resolve or Photoshop. Every AI command and brush stroke is recorded as a BakeNode for versioning and incremental re-evaluation.</p>
 					</div>
 				</div>
 			</section>
 
 			<section id="live-canvas" class="cli-section">
-				<h2>Live Canvas CLI</h2>
+				<h2>Live Canvas</h2>
 				<p class="cli-lead">
-					The local companion for serious tethered work. Real-time device control, advanced LUT pipelines, and live lab tooling.
+					The local CLI companion for aito.<br>
+					Real-time camera tethering, advanced LUT pipelines, and the tools you reach for on set.
 				</p>
 
 				<div class="cli-install">
 					<div class="install-block">
-						<h4>Install with npm</h4>
+						<h4>npm</h4>
 						<pre><code>npm install -g @fornevercollective/live-canvas</code></pre>
 					</div>
 					<div class="install-block">
-						<h4>Install with Homebrew</h4>
+						<h4>Homebrew</h4>
 						<pre><code>brew install fornevercollective/tap/live-canvas</code></pre>
 					</div>
 					<div class="install-block">
@@ -225,17 +301,14 @@ const iterations = iterationsConfig.iterations;
 				</div>
 
 				<p class="cli-note">
-					<a href={`${import.meta.env.BASE_URL}hub/versions/living-canvas/`}>Read the architecture &amp; research →</a>
-				</p>
-				<p style="font-size: 0.8rem; color: #555; margin-top: 1rem;">
-					(Replace placeholder screenshots in <code>/public/screenshots/</code> with real ones before launch)
+					<a href={`${import.meta.env.BASE_URL}versions/living-canvas/`}>Architecture &amp; research →</a>
 				</p>
 			</section>
 
 			<footer>
 				<p>
-					Open source • <a href="https://github.com/fornevercollective/aito">GitHub</a><br>
-					Built with Astro + WebGL
+					Open source • <a href="https://github.com/fornevercollective/aito">GitHub</a> • <a href={`${import.meta.env.BASE_URL}hub/`}>Hub &amp; iterations</a><br>
+					Requires a modern browser + Node 22+ for the CLI companion.
 				</p>
 			</footer>
 		</div>

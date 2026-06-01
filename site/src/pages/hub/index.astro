@@ -1,0 +1,123 @@
+---
+import iterationsConfig from '../../../../versions/iterations.json';
+const iterations = iterationsConfig.iterations;
+---
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+	<link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
+	<meta name="viewport" content="width=device-width" />
+	<title>Hub — aito</title>
+	<style>
+		:root {
+			--bg: #0a0a0b;
+			--fg: #e7e7ea;
+			--accent: #ff5b2e;
+			--muted: #8a8a93;
+			--card: #111113;
+		}
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--fg);
+			font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, system-ui, sans-serif;
+			line-height: 1.6;
+		}
+		.container { max-width: 860px; margin: 0 auto; padding: 3rem 2rem; }
+		h1 { font-size: 2.5rem; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+		.lead { color: var(--muted); font-size: 1.1rem; max-width: 560px; }
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 1.5rem;
+			margin-top: 3rem;
+		}
+		.card {
+			background: var(--card);
+			border: 1px solid #222;
+			border-radius: 12px;
+			padding: 1.75rem;
+			text-decoration: none;
+			color: inherit;
+			transition: border-color 0.15s ease, transform 0.1s ease;
+		}
+		.card:hover {
+			border-color: #333;
+			transform: translateY(-1px);
+		}
+		.card h3 {
+			margin: 0 0 0.5rem;
+			font-size: 1.15rem;
+			color: var(--fg);
+		}
+		.card p {
+			margin: 0;
+			color: var(--muted);
+			font-size: 0.95rem;
+		}
+		.badge {
+			display: inline-block;
+			font-size: 0.7rem;
+			padding: 2px 8px;
+			border-radius: 999px;
+			background: #222;
+			color: #aaa;
+			margin-left: 0.5rem;
+		}
+		footer {
+			margin-top: 4rem;
+			padding-top: 2rem;
+			border-top: 1px solid #222;
+			color: var(--muted);
+			font-size: 0.9rem;
+		}
+		a { color: var(--accent); text-decoration: none; }
+		a:hover { text-decoration: underline; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<h1>aito Hub</h1>
+			<p class="lead">
+				The core editor, the Live Canvas CLI companion, and all future tracks live here.
+			</p>
+		</header>
+
+		<div class="grid">
+			<a href={`${import.meta.env.BASE_URL}`} class="card">
+				<h3>Editor <span class="badge">current</span></h3>
+				<p>The production AI photo editor. Open in browser. Real-time Grok commands, tethered capture, film LUTs, and masked brush refinement.</p>
+			</a>
+
+			<a href={`${import.meta.env.BASE_URL}versions/living-canvas/`} class="card">
+				<h3>Live Canvas CLI</h3>
+				<p>The local companion for tethered workflows and high-end color pipelines. npm / brew / direct download.</p>
+			</a>
+
+			{iterations
+				.filter((it: any) => it.status !== 'archived' && it.id !== 'main' && it.id !== 'living-canvas')
+				.map((it: any) => {
+					const href = it.demoPath 
+						? (it.demoPath.startsWith('http') ? it.demoPath : `${import.meta.env.BASE_URL}${it.demoPath.replace(/^\//, '')}`)
+						: `${import.meta.env.BASE_URL}versions/${it.id}/`;
+					return (
+						<a href={href} class="card" key={it.id}>
+							<h3>{it.title}</h3>
+							<p>{it.description}</p>
+						</a>
+					);
+				})}
+		</div>
+
+		<footer>
+			<p>
+				Open source on <a href="https://github.com/fornevercollective/aito">GitHub</a> • 
+				<a href={`${import.meta.env.BASE_URL}`}>← Return to editor</a>
+			</p>
+		</footer>
+	</div>
+</body>
+</html>

@@ -19,10 +19,10 @@ import LiveBakeRail from '../../components/LiveBakeRail.astro';
 	<VersionSwitcher />
 	<h1>Live Canvas</h1>
 	<p class="subtitle">The local CLI companion for aito</p>
-	<p><a href="/aito/hub/">← Back to hub</a></p>
+	<p><a href={`${import.meta.env.BASE_URL}hub/`}>← Back to Hub</a></p>
 
-	<h2>Built for the people who live on set and in the color suite.</h2>
-	<p>Real-time camera tethering, advanced LUT creation &amp; application, and the tools you actually need when you're working with high-end stills and motion.</p>
+	<h2>Built for tethered workflows and high-end color.</h2>
+	<p>Real-time camera tethering, powerful LUT pipelines, and the local tools you reach for when the work actually matters.</p>
 
 	<!-- In a real setup you would render the markdown nicely.
 	     For now we link to the raw file in the repo. -->
@@ -58,7 +58,11 @@ import LiveBakeRail from '../../components/LiveBakeRail.astro';
 
 	<p style="margin-top:2rem; color:#8a8a93; font-size: 0.9rem;">
 		This page contains the technical research and vision. The CLI itself is the practical tool.<br>
-		Add real screenshots to <code>public/screenshots/</code> before launch.
+		Launch screenshots live in the main site.
+	</p>
+
+	<p style="font-size: 0.85rem; color: #555;">
+		Requires Node 22+ • Works with any camera that has a local companion (see the overview live lab tools for examples).
 	</p>
 
 	<h2>Live Bake Path (vwall + Tree Walker)</h2>
@@ -67,8 +71,8 @@ import LiveBakeRail from '../../components/LiveBakeRail.astro';
 	<LiveBakeRail />
 
 	<div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #222;">
-		<a href={`${import.meta.env.BASE_URL}versions/main/`} style="color: #ff5b2e; text-decoration: none; font-weight: 500;">
-			→ Try the current Main Editor →
+		<a href={`${import.meta.env.BASE_URL}`} style="color: #ff5b2e; text-decoration: none; font-weight: 500;">
+			→ Open the Editor →
 		</a>
 	</div>
 </body>
