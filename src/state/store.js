@@ -46,6 +46,8 @@ export const useApp = create((set) => ({
         mode: "add",
     },
     isTethered: false,
+    exif: null,
+    tetherCamera: null,
     bakeWalker: new BakeTreeWalker(),
     currentBakeHead: null,
     bakeHistory: [],
@@ -196,6 +198,8 @@ export const useApp = create((set) => ({
         brush: { ...s.brush, active: !s.brush.active },
     })),
     setIsTethered: (v) => set({ isTethered: v }),
+    setExif: (exif) => set({ exif }),
+    setTetherCamera: (model) => set({ tetherCamera: model }),
     // Live bake tree actions (tree-sitter walker + vwall ladder ready)
     appendBakeNode: (node) => set((s) => {
         s.bakeWalker.addNode(node);

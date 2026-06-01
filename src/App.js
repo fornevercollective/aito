@@ -3,11 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { BeforeAfter } from "./components/BeforeAfter";
 import { ControlPanel } from "./components/ui/ControlPanel";
 import { BatchPanel, SegmentPanel } from "./components/ui/SegmentPanel";
+import { Inspector } from "./components/ui/Inspector";
 import { AIStatus } from "./components/ui/AIStatus";
 import { connectAiChannel } from "./ai/channel";
 import { useApp } from "./state/store";
 import { loadFile } from "./lib/image";
 import { callGrokForEdits, captureCurrentImageBase64 } from "./lib/grok";
+import { extractExif } from "./lib/exif";
 const WS_URL = import.meta.env.VITE_AI_WS ?? "";
 export default function App() {
     const [tab, setTabState] = useState("segment");
@@ -21,8 +23,7 @@ export default function App() {
     const adjustmentScope = useApp((s) => s.adjustmentScope);
     const activeSegmentId = useApp((s) => s.activeSegmentId);
     const setAdjustment = useApp((s) => s.setAdjustment);
-    const [showAIPrompt, setShowAIPrompt] = useState(false);
-    const [showTether, setShowTether] = useState(false);
+    useState(true); // AI prompt is now always visible in top bar (launch style)
     const isTethered = useApp((s) => s.isTethered);
     const setIsTethered = useApp((s) => s.setIsTethered);
     const fileInputRef = useRef(null);
@@ -41,7 +42,10 @@ export default function App() {
                 setIsTethered(false);
                 useApp.getState().setAi({ busy: false, progress: 0 });
                 const loaded = await loadFile(file);
-                loadImage("both", loaded); // open photo ready to edit
+                loadImage("both", loaded);
+                // Extract EXIF for the inspector metadata panel
+                const exifData = await extractExif(file);
+                useApp.getState().setExif(exifData);
                 // Make SAM central immediately
                 setTabState("segment");
             }
@@ -96,10 +100,10 @@ export default function App() {
         const ws = new WebSocket(wsUrl);
         ws.onopen = () => {
             setIsTethered(true);
+            useApp.getState().setTetherCamera("Connected camera");
             // Force slider to center so live preview is clearly visible
             setSlider(0.5);
-            console.log('[Tether] Connected to local device');
-            // Send init message if needed
+            console.log('[Tether] Connected to local device companion');
             ws.send(JSON.stringify({ type: 'connect', client: 'aito' }));
         };
         ws.onmessage = (event) => {
@@ -117,6 +121,13 @@ export default function App() {
                         width: data.width || 1920,
                         height: data.height || 1080
                     });
+                    // Companion can push camera model + EXIF for the current frame
+                    if (data.camera) {
+                        useApp.getState().setTetherCamera(data.camera);
+                    }
+                    if (data.exif) {
+                        useApp.getState().setExif(data.exif);
+                    }
                 }
             }
             catch (e) {
@@ -262,24 +273,22 @@ export default function App() {
         });
         return () => cancelAnimationFrame(id);
     }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered]);
-    return (_jsxs("div", { className: "app", children: [_jsxs("div", { className: "top", children: [_jsx("span", { className: "brand", children: "aito" }), _jsx("span", { style: { fontSize: '10px', color: '#444', marginLeft: '4px' }, children: "live" }), _jsx("a", { href: "/aito/", className: "version-link", style: { color: '#888', marginLeft: '8px' }, children: "hub" }), _jsx("span", { className: "version-badge", children: "main" }), isTethered && (_jsxs("button", { className: "live-indicator live-view-btn", onClick: () => setShowTether(!showTether), title: "Live tethered view \u2014 click for controls", children: [_jsx("div", { className: "live-dot" }), "LIVE VIEW"] })), !isTethered && (_jsx("button", { className: "tether-btn", onClick: () => setShowTether(!showTether), title: "Connect Live Tether (local companion)", children: "Tether" })), showTether && (_jsxs("div", { className: "ai-command-bar", style: { flexDirection: 'column', alignItems: 'flex-start', fontSize: '12px' }, children: [_jsx("div", { children: "Local Tether Controls" }), _jsx("button", { onClick: () => !isTethered && connectTether(), children: "Connect to Local Companion" }), isTethered && (_jsx("button", { onClick: () => {
-                                    const ws = window.__aitoTether;
-                                    if (ws)
-                                        ws.close();
-                                    setIsTethered(false);
-                                }, children: "Disconnect" }))] })), _jsx("button", { className: "ai-toggle-btn", onClick: () => setShowAIPrompt(!showAIPrompt), title: "Grok AI Commands", children: "AI" }), showAIPrompt && (_jsxs("div", { className: "ai-command-bar", children: [_jsx("input", { type: "text", placeholder: "grok: cinematic teal orange, high contrast, film grain", className: "ai-input", onKeyDown: (e) => {
+    return (_jsxs("div", { className: "app", children: [_jsxs("div", { className: "top", children: [_jsx("span", { className: "brand", children: "aito" }), _jsx("span", { style: { fontSize: '10px', color: '#444', marginLeft: '4px' }, children: "live" }), _jsx("a", { href: "/aito/hub/", className: "version-link", style: { color: '#888', marginLeft: '8px' }, children: "hub" }), _jsx("span", { className: "version-badge", children: "main" }), isTethered && (_jsxs("button", { className: "live-indicator live-view-btn", onClick: () => {
+                            // The inspector on the far right is always visible when tethered
+                            // This just gives clear affordance
+                            const insp = document.querySelector('.inspector');
+                            insp?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, title: "Live tethered view \u2014 controls & EXIF on the right", children: [_jsx("div", { className: "live-dot" }), "LIVE VIEW"] })), !isTethered && (_jsx("button", { className: "tether-btn", onClick: connectTether, title: "Connect to local camera companion (supports all major camera systems)", children: "Tether" })), _jsxs("div", { className: "ai-command-bar-inline", children: [_jsx("input", { type: "text", placeholder: "Ask Grok\u2026 (e.g. teal & orange blockbuster, +0.7 exposure, mask subject)", className: "ai-input", onKeyDown: (e) => {
                                     if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                                         handleGrokCommand(e.currentTarget.value);
                                         e.currentTarget.value = '';
                                     }
-                                } }), _jsx("button", { className: "ai-btn", onClick: () => {
-                                    // Trigger on the last command or focus input
-                                }, children: "Send" })] })), _jsx("button", { type: "button", className: "open-btn", onClick: openFile, children: "Open" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
+                                } }), _jsx("button", { className: "ai-btn", onClick: () => { }, children: "Send" })] }), _jsx("button", { type: "button", className: "open-btn", onClick: openFile, children: "Open" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
                             const b = useApp.getState().before;
                             const bm = useApp.getState().beforeMeta;
                             useApp.getState().setSources(b, b, bm, bm);
                         }, children: "Reset" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
                             const s = useApp.getState();
                             s.setSources(s.after, s.before, s.afterMeta, s.beforeMeta);
-                        }, children: "Swap" }), _jsx("button", { type: "button", className: "top-btn primary", onClick: () => void exportCurrent(), children: "Export Full" }), adjustmentScope.useActiveMask && activeSegmentId && (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("subject"), children: "Export Subject" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("background"), children: "Export BG" })] })), _jsx("span", { className: "muted", children: "SAM \u00B7 corrections \u00B7 before/after" }), _jsx("div", { className: "spacer" }), _jsxs("span", { className: "muted", children: ["ws: ", _jsx("code", { children: WS_URL || "(mock)" }), " \u00B7 ", channel] }), _jsx("input", { ref: fileInputRef, type: "file", accept: "image/*", hidden: true, onChange: onFileChosen })] }), _jsx(BeforeAfter, {}), _jsxs("aside", { className: "panel", children: [_jsx("div", { className: "tabs", children: ["segment", "batch", "effects"].map((t) => (_jsx("button", { type: "button", className: tab === t ? "active" : "", onClick: () => setTabState(t), children: t }, t))) }), tab === "effects" && _jsx(ControlPanel, {}), tab === "segment" && _jsx(SegmentPanel, {}), tab === "batch" && _jsx(BatchPanel, {})] }), _jsx(AIStatus, {})] }));
+                        }, children: "Swap" }), _jsx("button", { type: "button", className: "top-btn primary", onClick: () => void exportCurrent(), children: "Export Full" }), adjustmentScope.useActiveMask && activeSegmentId && (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("subject"), children: "Export Subject" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("background"), children: "Export BG" })] })), _jsx("span", { className: "muted", children: "SAM \u00B7 corrections \u00B7 before/after" }), _jsx("div", { className: "spacer" }), _jsxs("span", { className: "muted", children: ["ws: ", _jsx("code", { children: WS_URL || "(mock)" }), " \u00B7 ", channel] }), _jsx("input", { ref: fileInputRef, type: "file", accept: "image/*", hidden: true, onChange: onFileChosen })] }), _jsx(BeforeAfter, {}), _jsxs("aside", { className: "panel", children: [_jsx("div", { className: "tabs", children: ["segment", "batch", "effects"].map((t) => (_jsx("button", { type: "button", className: tab === t ? "active" : "", onClick: () => setTabState(t), children: t }, t))) }), tab === "effects" && _jsx(ControlPanel, {}), tab === "segment" && _jsx(SegmentPanel, {}), tab === "batch" && _jsx(BatchPanel, {})] }), _jsx(Inspector, {}), _jsx(AIStatus, {})] }));
 }

@@ -14,6 +14,7 @@ import type {
 } from "@/segmentation/types";
 import type { LoadedImage } from "@/lib/image";
 import { BakeTreeWalker, type BakeNode } from "@/lib/bake-tree";
+import type { ExifData } from "@/lib/exif";
 
 export interface AiSignals {
   progress: number;
@@ -88,6 +89,12 @@ export interface AppState {
   /** Whether we're currently receiving live preview from a local tethered device (camera, etc.) */
   isTethered: boolean;
 
+  /** Parsed EXIF for the current image (works for file loads + tethered frames that include it) */
+  exif: ExifData | null;
+
+  /** Tether metadata (what camera the companion is talking to) */
+  tetherCamera: string | null;
+
   /** Live bake tree (tree-sitter style + vwall ladder integration). */
   bakeWalker: BakeTreeWalker;
   currentBakeHead: string | null; // id of the tip of the live bake tree
@@ -120,6 +127,8 @@ export interface AppState {
   resetAdjustments(): void;
 
   setIsTethered(v: boolean): void;
+  setExif(exif: ExifData | null): void;
+  setTetherCamera(model: string | null): void;
 
   setAdjustmentScope(patch: Partial<AppState["adjustmentScope"]>): void;
 
@@ -187,6 +196,8 @@ export const useApp = create<AppState>((set) => ({
     mode: "add",
   },
   isTethered: false,
+  exif: null,
+  tetherCamera: null,
   bakeWalker: new BakeTreeWalker(),
   currentBakeHead: null,
   bakeHistory: [],
@@ -364,6 +375,8 @@ export const useApp = create<AppState>((set) => ({
     })),
 
   setIsTethered: (v: boolean) => set({ isTethered: v }),
+  setExif: (exif) => set({ exif }),
+  setTetherCamera: (model) => set({ tetherCamera: model }),
 
   // Live bake tree actions (tree-sitter walker + vwall ladder ready)
   appendBakeNode: (node: BakeNode) =>

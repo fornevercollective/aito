@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { BeforeAfter } from "./components/BeforeAfter";
 import { ControlPanel } from "./components/ui/ControlPanel";
 import { BatchPanel, SegmentPanel } from "./components/ui/SegmentPanel";
+import { Inspector } from "./components/ui/Inspector";
 import { AIStatus } from "./components/ui/AIStatus";
 import { connectAiChannel } from "./ai/channel";
 import { useApp } from "./state/store";
 import { loadFile } from "./lib/image";
 import { callGrokForEdits, captureCurrentImageBase64 } from "./lib/grok";
+import { extractExif } from "./lib/exif";
 
 const WS_URL = import.meta.env.VITE_AI_WS ?? "";
 
@@ -24,8 +26,7 @@ export default function App() {
   const adjustmentScope = useApp((s) => s.adjustmentScope);
   const activeSegmentId = useApp((s) => s.activeSegmentId);
   const setAdjustment = useApp((s) => s.setAdjustment);
-  const [showAIPrompt, setShowAIPrompt] = useState(false);
-  const [showTether, setShowTether] = useState(false);
+  useState(true); // AI prompt is now always visible in top bar (launch style)
   const isTethered = useApp((s) => s.isTethered);
   const setIsTethered = useApp((s) => s.setIsTethered);
 
@@ -48,7 +49,11 @@ export default function App() {
         useApp.getState().setAi({ busy: false, progress: 0 });
 
         const loaded = await loadFile(file);
-        loadImage("both", loaded); // open photo ready to edit
+        loadImage("both", loaded);
+
+        // Extract EXIF for the inspector metadata panel
+        const exifData = await extractExif(file);
+        useApp.getState().setExif(exifData);
         // Make SAM central immediately
         setTabState("segment");
       } catch (err) {
@@ -110,10 +115,10 @@ export default function App() {
     
     ws.onopen = () => {
       setIsTethered(true);
+      useApp.getState().setTetherCamera("Connected camera");
       // Force slider to center so live preview is clearly visible
       setSlider(0.5);
-      console.log('[Tether] Connected to local device');
-      // Send init message if needed
+      console.log('[Tether] Connected to local device companion');
       ws.send(JSON.stringify({ type: 'connect', client: 'aito' }));
     };
 
@@ -133,6 +138,14 @@ export default function App() {
             width: data.width || 1920, 
             height: data.height || 1080 
           });
+
+          // Companion can push camera model + EXIF for the current frame
+          if (data.camera) {
+            useApp.getState().setTetherCamera(data.camera);
+          }
+          if (data.exif) {
+            useApp.getState().setExif(data.exif);
+          }
         }
       } catch (e) {
         // Could be binary blob - handle as needed
@@ -302,75 +315,49 @@ export default function App() {
         <a href="/aito/hub/" className="version-link" style={{color: '#888', marginLeft: '8px'}}>hub</a>
         <span className="version-badge">main</span>
 
-        {/* Prominent clickable Live View indicator when tethered */}
+        {/* Prominent clickable LIVE VIEW indicator — opens right inspector */}
         {isTethered && (
           <button 
             className="live-indicator live-view-btn"
-            onClick={() => setShowTether(!showTether)}
-            title="Live tethered view — click for controls"
+            onClick={() => {
+              // The inspector on the far right is always visible when tethered
+              // This just gives clear affordance
+              const insp = document.querySelector('.inspector');
+              insp?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }}
+            title="Live tethered view — controls & EXIF on the right"
           >
             <div className="live-dot" />
             LIVE VIEW
           </button>
         )}
 
-        {/* Live Tether button - only shown when not tethered (minimal) */}
+        {/* Tether connect (only when not live) */}
         {!isTethered && (
           <button 
             className="tether-btn"
-            onClick={() => setShowTether(!showTether)}
-            title="Connect Live Tether (local companion)"
+            onClick={connectTether}
+            title="Connect to local camera companion (supports all major camera systems)"
           >
             Tether
           </button>
         )}
 
-        {showTether && (
-          <div className="ai-command-bar" style={{flexDirection: 'column', alignItems: 'flex-start', fontSize: '12px'}}>
-            <div>Local Tether Controls</div>
-            <button onClick={() => !isTethered && connectTether()}>Connect to Local Companion</button>
-            {isTethered && (
-              <button onClick={() => {
-                const ws = (window as any).__aitoTether;
-                if (ws) ws.close();
-                setIsTethered(false);
-              }}>Disconnect</button>
-            )}
-          </div>
-        )}
-
-        {/* Minimal AI Command Bar - hidden by default, slides under top bar */}
-        <button 
-          className="ai-toggle-btn" 
-          onClick={() => setShowAIPrompt(!showAIPrompt)}
-          title="Grok AI Commands"
-        >
-          AI
-        </button>
-
-        {showAIPrompt && (
-          <div className="ai-command-bar">
-            <input 
-              type="text" 
-              placeholder="grok: cinematic teal orange, high contrast, film grain" 
-              className="ai-input"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                  handleGrokCommand(e.currentTarget.value);
-                  e.currentTarget.value = '';
-                }
-              }}
-            />
-            <button 
-              className="ai-btn" 
-              onClick={() => {
-                // Trigger on the last command or focus input
-              }}
-            >
-              Send
-            </button>
-          </div>
-        )}
+        {/* AI Prompt — always visible for power users (matches launch thumbnails) */}
+        <div className="ai-command-bar-inline">
+          <input 
+            type="text" 
+            placeholder="Ask Grok… (e.g. teal & orange blockbuster, +0.7 exposure, mask subject)"
+            className="ai-input"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                handleGrokCommand(e.currentTarget.value);
+                e.currentTarget.value = '';
+              }
+            }}
+          />
+          <button className="ai-btn" onClick={() => { /* input handles enter */ }}>Send</button>
+        </div>
         <button type="button" className="open-btn" onClick={openFile}>
           Open
         </button>
@@ -439,6 +426,10 @@ export default function App() {
         {tab === "segment" && <SegmentPanel />}
         {tab === "batch" && <BatchPanel />}
       </aside>
+
+      {/* Right inspector: Tether controls + EXIF/metadata — matches the launch thumbnails */}
+      <Inspector />
+
       <AIStatus />
     </div>
   );

@@ -15,11 +15,11 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
 
 .app {
   display: grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: 1fr 280px 240px;
   grid-template-rows: 48px 1fr;
   grid-template-areas:
-    "top  top"
-    "stage panel";
+    "top  top  top"
+    "stage panel inspector";
   height: 100%;
 }
 
@@ -466,6 +466,199 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   border: 1px solid var(--accent);
   border-radius: 8px;
   font-size: 15px;
+
+/* ============================================
+   NEW: 3-column layout + Right Inspector
+   (Tether controls + EXIF/metadata)
+   Matches the launch thumbnails
+   ============================================ */
+}
+
+.inspector {
+  grid-area: inspector;
+  border-left: 1px solid var(--line);
+  background: #0f0f11;
+  padding: 12px 10px;
+  overflow-y: auto;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inspector-section {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111113;
+  padding: 10px;
+}
+
+.inspector-section.tether {
+  border-color: #3a1a1a;
+}
+
+.inspector-header {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff9f1c;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inspector .live-dot {
+  width: 7px;
+  height: 7px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: live-pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.tether-info {
+  margin-bottom: 10px;
+}
+
+.tether-camera {
+  font-weight: 600;
+  font-size: 13px;
+  color: #eee;
+  margin-bottom: 2px;
+}
+
+.tether-note {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.tether-controls label {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin: 6px 0 2px;
+}
+
+.tether-controls input,
+.tether-controls select {
+  width: 100%;
+  background: #0a0a0b;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.capture-btn {
+  margin-top: 10px;
+  width: 100%;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.capture-btn:hover { filter: brightness(1.1); }
+
+.disconnect-btn {
+  margin-top: 6px;
+  width: 100%;
+  background: transparent;
+  color: #f77;
+  border: 1px solid #522;
+  padding: 5px;
+  font-size: 11px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 11px;
+}
+
+.meta-row:last-child {
+  border-bottom: none;
+}
+
+.meta-label {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.meta-value {
+  color: #ddd;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 58%;
+}
+
+.meta-empty {
+  color: #555;
+  font-size: 11px;
+  padding: 8px 0;
+}
+
+.inspector-footer {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.inspector-note {
+  font-size: 10px;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* AI prompt now lives in the top bar (prominent, always visible) */
+.top .ai-command-bar-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  max-width: 420px;
+  margin-left: 8px;
+}
+
+.top .ai-command-bar-inline .ai-input {
+  flex: 1;
+  background: #111;
+  border: 1px solid #333;
+  color: #eee;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  outline: none;
+}
+
+.top .ai-command-bar-inline .ai-input:focus {
+  border-color: var(--accent);
+}
+
+.top .ai-command-bar-inline .ai-btn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
   letter-spacing: 0.04em;
   color: #fff;
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
