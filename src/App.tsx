@@ -192,7 +192,7 @@ export default function App() {
       <div className="top">
         <span className="brand">aito</span>
         <span className="version-badge">main</span>
-        <a href="/versions/living-canvas/" className="version-link" title="View the Living Canvas pivot">living-canvas</a>
+        <a href="/aito/versions/living-canvas/" className="version-link" title="View the Living Canvas pivot">living-canvas</a>
         <button type="button" className="open-btn" onClick={openFile}>
           Open
         </button>

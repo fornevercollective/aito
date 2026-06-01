@@ -76,7 +76,7 @@ const iterations = iterationsConfig.iterations;
 							
 							<div class="links">
 								{iter.demoPath ? (
-									<a href={iter.demoPath}>→ Open Live Demo</a>
+									<a href={`${import.meta.env.BASE_URL}${iter.demoPath.replace(/^\//, '')}`}>→ Open Live Demo</a>
 								) : (
 									<a href="https://github.com/fornevercollective/aito">→ View on GitHub + Run Locally</a>
 								)}
@@ -85,7 +85,7 @@ const iterations = iterationsConfig.iterations;
 								{iter.artifacts && iter.artifacts.length > 0 && (
 									<>
 										<br />
-										<a href={`/versions/${iter.id}/`}>→ View Artifacts</a>
+										<a href={`${import.meta.env.BASE_URL}versions/${iter.id}/`}>→ View Artifacts</a>
 									</>
 								)}
 							</div>
