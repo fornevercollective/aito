@@ -7,7 +7,6 @@
   "workspaces": [
     "site"
   ],
-  "description": "AI image/video retouching app with AI-controllable WebGL effect layers over a before/after slider.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
