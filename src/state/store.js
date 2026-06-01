@@ -50,6 +50,8 @@ export const useApp = create((set) => ({
     tetherCamera: null,
     references: [],
     activeReferenceIds: [],
+    showInspector: true,
+    sliderAutoAnimation: true,
     bakeWalker: new BakeTreeWalker(),
     currentBakeHead: null,
     bakeHistory: [],
@@ -242,6 +244,8 @@ export const useApp = create((set) => ({
     })),
     clearReferences: () => set({ references: [], activeReferenceIds: [] }),
     setActiveReferences: (ids) => set({ activeReferenceIds: ids }),
+    setShowInspector: (v) => set({ showInspector: v }),
+    setSliderAutoAnimation: (v) => set({ sliderAutoAnimation: v }),
     // Live bake tree actions (tree-sitter walker + vwall ladder ready)
     appendBakeNode: (node) => set((s) => {
         s.bakeWalker.addNode(node);

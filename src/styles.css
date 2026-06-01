@@ -23,6 +23,14 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   height: 100%;
 }
 
+.app.inspector-collapsed {
+  grid-template-columns: 1fr 280px;
+}
+
+.app.inspector-collapsed .inspector {
+  display: none;
+}
+
 .top {
   grid-area: top;
   display: flex;

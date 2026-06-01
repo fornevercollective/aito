@@ -153,6 +153,9 @@ export interface AppState {
   clearReferences(): void;
   setActiveReferences(ids: string[]): void;
 
+  setShowInspector(v: boolean): void;
+  setSliderAutoAnimation(v: boolean): void;
+
   setAdjustmentScope(patch: Partial<AppState["adjustmentScope"]>): void;
 
   setBrush(patch: Partial<AppState["brush"]>): void;
@@ -445,6 +448,9 @@ export const useApp = create<AppState>((set) => ({
   })),
   clearReferences: () => set({ references: [], activeReferenceIds: [] }),
   setActiveReferences: (ids) => set({ activeReferenceIds: ids }),
+
+  setShowInspector: (v: boolean) => set({ showInspector: v }),
+  setSliderAutoAnimation: (v: boolean) => set({ sliderAutoAnimation: v }),
 
   // Live bake tree actions (tree-sitter walker + vwall ladder ready)
   appendBakeNode: (node: BakeNode) =>

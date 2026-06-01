@@ -29,6 +29,11 @@ export default function App() {
   const isTethered = useApp((s) => s.isTethered);
   const setIsTethered = useApp((s) => s.setIsTethered);
 
+  const showInspector = useApp((s) => s.showInspector);
+  const setShowInspector = useApp((s) => s.setShowInspector);
+  const sliderAutoAnimation = useApp((s) => s.sliderAutoAnimation);
+  const setSliderAutoAnimation = useApp((s) => s.setSliderAutoAnimation);
+
   // Mobile sheet state — enables the clean, image-first "start of the concept" experience on phones/tablets
   // while the desktop keeps the full powerful 3-column pro layout
   const [mobileSheet, setMobileSheet] = useState<null | 'tools' | 'inspector' | 'ai'>(null);
@@ -364,16 +369,16 @@ export default function App() {
     // In live tether mode we control the slider manually — disable AI takeover animation
     // to prevent it from sliding back and forth with stale preview frames
     const before = useApp.getState().before;
-    if (!before || sliderDragging || !ai.busy || isTethered) return;
+    if (!before || sliderDragging || !ai.busy || isTethered || !sliderAutoAnimation) return;
     const target = 1 - ai.progress * 0.5;
     const id = requestAnimationFrame(() => {
       setSlider(slider + (target - slider) * 0.08);
     });
     return () => cancelAnimationFrame(id);
-  }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered, before]);
+  }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered, before, sliderAutoAnimation]);
 
   return (
-    <div className="app">
+    <div className={`app ${!showInspector ? 'inspector-collapsed' : ''}`}>
       <div className="top">
         <span className="brand">aito</span>
         <span style={{fontSize: '10px', color: '#444', marginLeft: '4px'}}>live</span>
@@ -501,6 +506,25 @@ export default function App() {
           </>
         )}
         <span className="muted">SAM · corrections · before/after</span>
+
+        {/* Slider AI animation toggle */}
+        <button 
+          className={`top-btn ${sliderAutoAnimation ? '' : 'muted'}`}
+          onClick={() => setSliderAutoAnimation(!sliderAutoAnimation)}
+          title={sliderAutoAnimation ? "Disable AI slider animation (slider stays where you put it)" : "Enable AI slider animation"}
+        >
+          {sliderAutoAnimation ? "Auto-Slider" : "Manual Slider"}
+        </button>
+
+        {/* Right inspector / Reference Board toggle */}
+        <button 
+          className="top-btn"
+          onClick={() => setShowInspector(!showInspector)}
+          title={showInspector ? "Collapse right panel (refs, tether, EXIF)" : "Show right panel (refs, tether, EXIF)"}
+        >
+          {showInspector ? "Hide Board" : "Refs + Info"}
+        </button>
+
         <div className="spacer" />
         <span className="muted">
           ws: <code>{WS_URL || "(mock)"}</code> · {channel}
@@ -532,8 +556,8 @@ export default function App() {
         {tab === "batch" && <BatchPanel />}
       </aside>
 
-      {/* Right inspector: Tether controls + EXIF/metadata — matches the launch thumbnails */}
-      <Inspector />
+      {/* Right inspector / Reference Board (collapsible) */}
+      {showInspector && <Inspector />}
 
       <AIStatus />
 
