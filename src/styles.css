@@ -837,6 +837,55 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   white-space: nowrap;
 }
 
+/* Compact active references row (Krea-style awareness even when panel collapsed) */
+.top .active-refs-compact {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  font-size: 10px;
+}
+
+.top .active-refs-compact .refs-label {
+  color: #666;
+  font-weight: 500;
+  margin-right: 2px;
+}
+
+.top .active-refs-compact .ref-pill {
+  background: #1f1f22;
+  border: 1px solid #333;
+  color: #ff9f1c;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 9px;
+  max-width: 78px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top .active-refs-compact .ref-pill.more {
+  background: #222;
+  color: #888;
+}
+
+.top .active-refs-compact .refs-manage-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #888;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.top .active-refs-compact .refs-manage-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ============================================
    MOBILE / RESPONSIVE — "start of the concept"
    Clean, image-first experience on phones & tablets.

@@ -34,6 +34,10 @@ export default function App() {
   const sliderAutoAnimation = useApp((s) => s.sliderAutoAnimation);
   const setSliderAutoAnimation = useApp((s) => s.setSliderAutoAnimation);
 
+  const allReferences = useApp((s) => s.references);
+  const activeRefIds = useApp((s) => s.activeReferenceIds);
+  const activeReferences = allReferences.filter(r => activeRefIds.includes(r.id));
+
   // Mobile sheet state — enables the clean, image-first "start of the concept" experience on phones/tablets
   // while the desktop keeps the full powerful 3-column pro layout
   const [mobileSheet, setMobileSheet] = useState<null | 'tools' | 'inspector' | 'ai'>(null);
@@ -365,6 +369,40 @@ export default function App() {
     return () => handle.close();
   }, []);
 
+  // Auto-preload a few demo commercial reference images on first load (for demo purposes)
+  // These come from the images the user added to public/img/
+  const hasPreloadedRefs = useRef(false);
+  useEffect(() => {
+    if (hasPreloadedRefs.current) return;
+
+    const refs = useApp.getState().references;
+    if (refs.length === 0) {
+      const base = import.meta.env.BASE_URL || '/';
+      const demoRefs = [
+        {
+          url: `${base}img/1e868e7c-7838-44b5-81e5-87c92fcedd78.jpg`,
+          label: "Hero Product",
+          source: "upload" as const,
+        },
+        {
+          url: `${base}img/4979fb2e-d1d0-4e70-8bc3-7a4eb3e38c6a.jpg`,
+          label: "Talent Reference",
+          source: "upload" as const,
+        },
+        {
+          url: `${base}img/a586556b-deca-4d39-939a-ca4db6670578.jpg`,
+          label: "Mood & Color Direction",
+          source: "upload" as const,
+        },
+      ];
+
+      demoRefs.forEach((r) => {
+        useApp.getState().addReference(r);
+      });
+    }
+    hasPreloadedRefs.current = true;
+  }, []);
+
   useEffect(() => {
     // In live tether mode we control the slider manually — disable AI takeover animation
     // to prevent it from sliding back and forth with stale preview frames
@@ -426,6 +464,28 @@ export default function App() {
           >
             Install
           </button>
+        )}
+
+        {/* Compact active references (visible even when right panel collapsed) */}
+        {activeReferences.length > 0 && (
+          <div className="active-refs-compact">
+            <span className="refs-label">Refs:</span>
+            {activeReferences.slice(0, 3).map((ref) => (
+              <span key={ref.id} className="ref-pill" title={ref.label}>
+                {ref.label.length > 12 ? ref.label.slice(0, 10) + '…' : ref.label}
+              </span>
+            ))}
+            {activeReferences.length > 3 && (
+              <span className="ref-pill more">+{activeReferences.length - 3}</span>
+            )}
+            <button 
+              className="refs-manage-btn"
+              onClick={() => setShowInspector(true)}
+              title="Manage reference board"
+            >
+              Manage
+            </button>
+          </div>
         )}
 
         {/* AI Prompt — now supports direct + high-quality planning mode */}
@@ -523,6 +583,36 @@ export default function App() {
           title={showInspector ? "Collapse right panel (refs, tether, EXIF)" : "Show right panel (refs, tether, EXIF)"}
         >
           {showInspector ? "Hide Board" : "Refs + Info"}
+        </button>
+
+        {/* Quick commercial reference captures (Krea realtime feel) */}
+        <button 
+          className="top-btn"
+          onClick={() => {
+            const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+            if (canvas) {
+              const url = canvas.toDataURL('image/jpeg', 0.9);
+              const id = useApp.getState().addReference({ url, label: "Hero Product", source: "canvas" });
+              useApp.getState().setActiveReferences([...useApp.getState().activeReferenceIds, id]);
+            }
+          }}
+          title="Capture current view as Hero Product reference"
+        >
+          +Hero
+        </button>
+        <button 
+          className="top-btn"
+          onClick={() => {
+            const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+            if (canvas) {
+              const url = canvas.toDataURL('image/jpeg', 0.9);
+              const id = useApp.getState().addReference({ url, label: "Mood Direction", source: "canvas" });
+              useApp.getState().setActiveReferences([...useApp.getState().activeReferenceIds, id]);
+            }
+          }}
+          title="Capture current view as Mood / Color reference"
+        >
+          +Mood
         </button>
 
         <div className="spacer" />

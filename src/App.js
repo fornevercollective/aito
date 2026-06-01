@@ -29,6 +29,9 @@ export default function App() {
     const setShowInspector = useApp((s) => s.setShowInspector);
     const sliderAutoAnimation = useApp((s) => s.sliderAutoAnimation);
     const setSliderAutoAnimation = useApp((s) => s.setSliderAutoAnimation);
+    const allReferences = useApp((s) => s.references);
+    const activeRefIds = useApp((s) => s.activeReferenceIds);
+    const activeReferences = allReferences.filter(r => activeRefIds.includes(r.id));
     // Mobile sheet state — enables the clean, image-first "start of the concept" experience on phones/tablets
     // while the desktop keeps the full powerful 3-column pro layout
     const [mobileSheet, setMobileSheet] = useState(null);
@@ -333,6 +336,38 @@ export default function App() {
         const handle = connectAiChannel(WS_URL || undefined);
         return () => handle.close();
     }, []);
+    // Auto-preload a few demo commercial reference images on first load (for demo purposes)
+    // These come from the images the user added to public/img/
+    const hasPreloadedRefs = useRef(false);
+    useEffect(() => {
+        if (hasPreloadedRefs.current)
+            return;
+        const refs = useApp.getState().references;
+        if (refs.length === 0) {
+            const base = import.meta.env.BASE_URL || '/';
+            const demoRefs = [
+                {
+                    url: `${base}img/1e868e7c-7838-44b5-81e5-87c92fcedd78.jpg`,
+                    label: "Hero Product",
+                    source: "upload",
+                },
+                {
+                    url: `${base}img/4979fb2e-d1d0-4e70-8bc3-7a4eb3e38c6a.jpg`,
+                    label: "Talent Reference",
+                    source: "upload",
+                },
+                {
+                    url: `${base}img/a586556b-deca-4d39-939a-ca4db6670578.jpg`,
+                    label: "Mood & Color Direction",
+                    source: "upload",
+                },
+            ];
+            demoRefs.forEach((r) => {
+                useApp.getState().addReference(r);
+            });
+        }
+        hasPreloadedRefs.current = true;
+    }, []);
     useEffect(() => {
         // In live tether mode we control the slider manually — disable AI takeover animation
         // to prevent it from sliding back and forth with stale preview frames
@@ -355,7 +390,7 @@ export default function App() {
                                 const insp = document.querySelector('.inspector');
                                 insp?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                             }
-                        }, title: "Live tethered view \u2014 controls & EXIF", children: [_jsx("div", { className: "live-dot" }), "LIVE VIEW"] })), !isTethered && (_jsx("button", { className: "tether-btn", onClick: connectTether, title: "Connect to local camera companion (supports all major camera systems)", children: "Tether" })), isInstallable && (_jsx("button", { className: "top-btn", onClick: handleInstallClick, title: "Install aito as an app (PWA)", children: "Install" })), _jsxs("div", { className: "ai-command-bar-inline", children: [_jsx("input", { type: "text", placeholder: "Ask Grok\u2026 (e.g. cinematic teal orange blockbuster, mask the subject, subtle film grain)", className: "ai-input", onKeyDown: (e) => {
+                        }, title: "Live tethered view \u2014 controls & EXIF", children: [_jsx("div", { className: "live-dot" }), "LIVE VIEW"] })), !isTethered && (_jsx("button", { className: "tether-btn", onClick: connectTether, title: "Connect to local camera companion (supports all major camera systems)", children: "Tether" })), isInstallable && (_jsx("button", { className: "top-btn", onClick: handleInstallClick, title: "Install aito as an app (PWA)", children: "Install" })), activeReferences.length > 0 && (_jsxs("div", { className: "active-refs-compact", children: [_jsx("span", { className: "refs-label", children: "Refs:" }), activeReferences.slice(0, 3).map((ref) => (_jsx("span", { className: "ref-pill", title: ref.label, children: ref.label.length > 12 ? ref.label.slice(0, 10) + '…' : ref.label }, ref.id))), activeReferences.length > 3 && (_jsxs("span", { className: "ref-pill more", children: ["+", activeReferences.length - 3] })), _jsx("button", { className: "refs-manage-btn", onClick: () => setShowInspector(true), title: "Manage reference board", children: "Manage" })] })), _jsxs("div", { className: "ai-command-bar-inline", children: [_jsx("input", { type: "text", placeholder: "Ask Grok\u2026 (e.g. cinematic teal orange blockbuster, mask the subject, subtle film grain)", className: "ai-input", onKeyDown: (e) => {
                                     if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                                         handleGrokCommand(e.currentTarget.value, 'direct');
                                         e.currentTarget.value = '';
@@ -379,7 +414,21 @@ export default function App() {
                         }, children: "Reset" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
                             const s = useApp.getState();
                             s.setSources(s.after, s.before, s.afterMeta, s.beforeMeta);
-                        }, children: "Swap" }), _jsx("button", { type: "button", className: "top-btn primary", onClick: () => void exportCurrent(), children: "Export Full" }), adjustmentScope.useActiveMask && activeSegmentId && (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("subject"), children: "Export Subject" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("background"), children: "Export BG" })] })), _jsx("span", { className: "muted", children: "SAM \u00B7 corrections \u00B7 before/after" }), _jsx("button", { className: `top-btn ${sliderAutoAnimation ? '' : 'muted'}`, onClick: () => setSliderAutoAnimation(!sliderAutoAnimation), title: sliderAutoAnimation ? "Disable AI slider animation (slider stays where you put it)" : "Enable AI slider animation", children: sliderAutoAnimation ? "Auto-Slider" : "Manual Slider" }), _jsx("button", { className: "top-btn", onClick: () => setShowInspector(!showInspector), title: showInspector ? "Collapse right panel (refs, tether, EXIF)" : "Show right panel (refs, tether, EXIF)", children: showInspector ? "Hide Board" : "Refs + Info" }), _jsx("div", { className: "spacer" }), _jsxs("span", { className: "muted", children: ["ws: ", _jsx("code", { children: WS_URL || "(mock)" }), " \u00B7 ", channel] }), _jsx("input", { ref: fileInputRef, type: "file", accept: "image/*", hidden: true, onChange: onFileChosen })] }), _jsx(BeforeAfter, {}), _jsxs("aside", { className: "panel", children: [_jsx("div", { className: "tabs", children: ["segment", "batch", "effects"].map((t) => (_jsx("button", { type: "button", className: tab === t ? "active" : "", onClick: () => setTabState(t), children: t }, t))) }), tab === "effects" && _jsx(ControlPanel, {}), tab === "segment" && _jsx(SegmentPanel, {}), tab === "batch" && _jsx(BatchPanel, {})] }), showInspector && _jsx(Inspector, {}), _jsx(AIStatus, {}), _jsxs("div", { className: "mobile-bottom-bar", children: [_jsxs("button", { onClick: () => setMobileSheet('ai'), title: "AI / Grok", children: [_jsx("span", { className: "icon", children: "\u2726" }), _jsx("span", { children: "AI" })] }), _jsxs("button", { onClick: () => setMobileSheet('tools'), title: "Tools & masks", children: [_jsx("span", { className: "icon", children: "\u25D0" }), _jsx("span", { children: "Tools" })] }), _jsxs("button", { onClick: () => setMobileSheet('inspector'), className: isTethered ? 'active' : '', title: "Tether + Metadata", children: [_jsx("span", { className: "icon", children: "\u2B21" }), _jsx("span", { children: isTethered ? 'LIVE' : 'Info' })] }), _jsxs("button", { onClick: () => void exportCurrent(), title: "Export", children: [_jsx("span", { className: "icon", children: "\u2193" }), _jsx("span", { children: "Export" })] })] }), mobileSheet && (_jsxs("div", { className: `mobile-sheet ${mobileSheet ? 'open' : ''}`, children: [_jsxs("div", { className: "mobile-sheet-header", children: [_jsxs("div", { className: "title", children: [mobileSheet === 'ai' && 'AI Command', mobileSheet === 'tools' && 'Tools & Masking', mobileSheet === 'inspector' && (isTethered ? 'Live Tether + Metadata' : 'Metadata')] }), _jsx("button", { className: "close", onClick: () => setMobileSheet(null), children: "\u00D7" })] }), _jsxs("div", { className: "mobile-sheet-content", children: [mobileSheet === 'ai' && (_jsxs(_Fragment, { children: [_jsx("input", { type: "text", className: "mobile-ai-input", placeholder: "Describe the look for Grok (film, exposure, mask, LUT...)", onKeyDown: (e) => {
+                        }, children: "Swap" }), _jsx("button", { type: "button", className: "top-btn primary", onClick: () => void exportCurrent(), children: "Export Full" }), adjustmentScope.useActiveMask && activeSegmentId && (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("subject"), children: "Export Subject" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("background"), children: "Export BG" })] })), _jsx("span", { className: "muted", children: "SAM \u00B7 corrections \u00B7 before/after" }), _jsx("button", { className: `top-btn ${sliderAutoAnimation ? '' : 'muted'}`, onClick: () => setSliderAutoAnimation(!sliderAutoAnimation), title: sliderAutoAnimation ? "Disable AI slider animation (slider stays where you put it)" : "Enable AI slider animation", children: sliderAutoAnimation ? "Auto-Slider" : "Manual Slider" }), _jsx("button", { className: "top-btn", onClick: () => setShowInspector(!showInspector), title: showInspector ? "Collapse right panel (refs, tether, EXIF)" : "Show right panel (refs, tether, EXIF)", children: showInspector ? "Hide Board" : "Refs + Info" }), _jsx("button", { className: "top-btn", onClick: () => {
+                            const canvas = document.querySelector('canvas');
+                            if (canvas) {
+                                const url = canvas.toDataURL('image/jpeg', 0.9);
+                                const id = useApp.getState().addReference({ url, label: "Hero Product", source: "canvas" });
+                                useApp.getState().setActiveReferences([...useApp.getState().activeReferenceIds, id]);
+                            }
+                        }, title: "Capture current view as Hero Product reference", children: "+Hero" }), _jsx("button", { className: "top-btn", onClick: () => {
+                            const canvas = document.querySelector('canvas');
+                            if (canvas) {
+                                const url = canvas.toDataURL('image/jpeg', 0.9);
+                                const id = useApp.getState().addReference({ url, label: "Mood Direction", source: "canvas" });
+                                useApp.getState().setActiveReferences([...useApp.getState().activeReferenceIds, id]);
+                            }
+                        }, title: "Capture current view as Mood / Color reference", children: "+Mood" }), _jsx("div", { className: "spacer" }), _jsxs("span", { className: "muted", children: ["ws: ", _jsx("code", { children: WS_URL || "(mock)" }), " \u00B7 ", channel] }), _jsx("input", { ref: fileInputRef, type: "file", accept: "image/*", hidden: true, onChange: onFileChosen })] }), _jsx(BeforeAfter, {}), _jsxs("aside", { className: "panel", children: [_jsx("div", { className: "tabs", children: ["segment", "batch", "effects"].map((t) => (_jsx("button", { type: "button", className: tab === t ? "active" : "", onClick: () => setTabState(t), children: t }, t))) }), tab === "effects" && _jsx(ControlPanel, {}), tab === "segment" && _jsx(SegmentPanel, {}), tab === "batch" && _jsx(BatchPanel, {})] }), showInspector && _jsx(Inspector, {}), _jsx(AIStatus, {}), _jsxs("div", { className: "mobile-bottom-bar", children: [_jsxs("button", { onClick: () => setMobileSheet('ai'), title: "AI / Grok", children: [_jsx("span", { className: "icon", children: "\u2726" }), _jsx("span", { children: "AI" })] }), _jsxs("button", { onClick: () => setMobileSheet('tools'), title: "Tools & masks", children: [_jsx("span", { className: "icon", children: "\u25D0" }), _jsx("span", { children: "Tools" })] }), _jsxs("button", { onClick: () => setMobileSheet('inspector'), className: isTethered ? 'active' : '', title: "Tether + Metadata", children: [_jsx("span", { className: "icon", children: "\u2B21" }), _jsx("span", { children: isTethered ? 'LIVE' : 'Info' })] }), _jsxs("button", { onClick: () => void exportCurrent(), title: "Export", children: [_jsx("span", { className: "icon", children: "\u2193" }), _jsx("span", { children: "Export" })] })] }), mobileSheet && (_jsxs("div", { className: `mobile-sheet ${mobileSheet ? 'open' : ''}`, children: [_jsxs("div", { className: "mobile-sheet-header", children: [_jsxs("div", { className: "title", children: [mobileSheet === 'ai' && 'AI Command', mobileSheet === 'tools' && 'Tools & Masking', mobileSheet === 'inspector' && (isTethered ? 'Live Tether + Metadata' : 'Metadata')] }), _jsx("button", { className: "close", onClick: () => setMobileSheet(null), children: "\u00D7" })] }), _jsxs("div", { className: "mobile-sheet-content", children: [mobileSheet === 'ai' && (_jsxs(_Fragment, { children: [_jsx("input", { type: "text", className: "mobile-ai-input", placeholder: "Describe the look for Grok (film, exposure, mask, LUT...)", onKeyDown: (e) => {
                                             if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                                                 handleGrokCommand(e.currentTarget.value, 'plan'); // default to plan on mobile
                                                 e.currentTarget.value = '';
