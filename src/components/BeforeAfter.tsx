@@ -22,6 +22,7 @@ export function BeforeAfter() {
   const slider = useApp((s) => s.slider);
   const setSlider = useApp((s) => s.setSlider);
   const setSliderDragging = useApp((s) => s.setSliderDragging);
+  const sliderAutoAnimation = useApp((s) => s.sliderAutoAnimation);
   const segmentTool = useApp((s) => s.segmentTool);
   const segmentBackend = useApp((s) => s.segmentBackend);
   const before = useApp((s) => s.before);
@@ -157,14 +158,25 @@ export function BeforeAfter() {
       <MaskOverlay />
       <BrushOverlay />
       <div
-        className="slider-handle"
+        className={`slider-handle ${!sliderAutoAnimation ? 'manual' : ''}`}
         style={{ left: `${slider * 100}%` }}
       />
       <div
-        className="slider-drag"
+        className={`slider-drag ${!sliderAutoAnimation ? 'manual' : ''}`}
         style={{ left: `${slider * 100}%` }}
         onPointerDown={onHandlePointerDown}
       />
+
+      {/* Visual indicator when slider auto-animation (AI drive) is disabled */}
+      {!sliderAutoAnimation && (
+        <div
+          className="slider-manual-indicator"
+          style={{ left: `${slider * 100}%` }}
+        >
+          MANUAL
+        </div>
+      )}
+
       <div className="labels">
         <span className={slider > 0.05 ? "active" : ""}>Before</span>
         <span>·</span>

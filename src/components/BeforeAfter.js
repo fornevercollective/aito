@@ -16,6 +16,7 @@ export function BeforeAfter() {
     const slider = useApp((s) => s.slider);
     const setSlider = useApp((s) => s.setSlider);
     const setSliderDragging = useApp((s) => s.setSliderDragging);
+    const sliderAutoAnimation = useApp((s) => s.sliderAutoAnimation);
     const segmentTool = useApp((s) => s.segmentTool);
     const segmentBackend = useApp((s) => s.segmentBackend);
     const before = useApp((s) => s.before);
@@ -132,5 +133,5 @@ export function BeforeAfter() {
     };
     // Also support clicking the stage in certain empty-ish states later;
     // for now drag is the hero gesture.
-    return (_jsxs("div", { ref: wrapRef, className: `stage tool-${segmentTool} ${isDragging ? "drag-over" : ""}`, onClick: onStageClick, onDragOver: onDragOver, onDragLeave: onDragLeave, onDrop: onDrop, children: [_jsx("div", { className: "canvas-wrap", children: _jsx(EffectStage, {}) }), _jsx(MaskOverlay, {}), _jsx(BrushOverlay, {}), _jsx("div", { className: "slider-handle", style: { left: `${slider * 100}%` } }), _jsx("div", { className: "slider-drag", style: { left: `${slider * 100}%` }, onPointerDown: onHandlePointerDown }), _jsxs("div", { className: "labels", children: [_jsx("span", { className: slider > 0.05 ? "active" : "", children: "Before" }), _jsx("span", { children: "\u00B7" }), _jsx("span", { className: slider < 0.95 ? "active" : "", children: "After" }), _jsx("span", { children: "\u00B7" }), _jsx("span", { children: segmentBusy ? "segmenting…" : ai.busy ? ai.status : "idle" })] }), isDragging && (_jsx("div", { className: "drop-overlay", children: _jsx("div", { className: "drop-card", children: "Drop image to edit" }) }))] }));
+    return (_jsxs("div", { ref: wrapRef, className: `stage tool-${segmentTool} ${isDragging ? "drag-over" : ""}`, onClick: onStageClick, onDragOver: onDragOver, onDragLeave: onDragLeave, onDrop: onDrop, children: [_jsx("div", { className: "canvas-wrap", children: _jsx(EffectStage, {}) }), _jsx(MaskOverlay, {}), _jsx(BrushOverlay, {}), _jsx("div", { className: `slider-handle ${!sliderAutoAnimation ? 'manual' : ''}`, style: { left: `${slider * 100}%` } }), _jsx("div", { className: `slider-drag ${!sliderAutoAnimation ? 'manual' : ''}`, style: { left: `${slider * 100}%` }, onPointerDown: onHandlePointerDown }), !sliderAutoAnimation && (_jsx("div", { className: "slider-manual-indicator", style: { left: `${slider * 100}%` }, children: "MANUAL" })), _jsxs("div", { className: "labels", children: [_jsx("span", { className: slider > 0.05 ? "active" : "", children: "Before" }), _jsx("span", { children: "\u00B7" }), _jsx("span", { className: slider < 0.95 ? "active" : "", children: "After" }), _jsx("span", { children: "\u00B7" }), _jsx("span", { children: segmentBusy ? "segmenting…" : ai.busy ? ai.status : "idle" })] }), isDragging && (_jsx("div", { className: "drop-overlay", children: _jsx("div", { className: "drop-card", children: "Drop image to edit" }) }))] }));
 }

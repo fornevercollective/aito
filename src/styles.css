@@ -334,12 +334,51 @@ html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(-
   border: none;
   pointer-events: none;
 }
+
+/* Manual mode styling on the slider itself */
+.slider-handle.manual {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.85) 0,
+    rgba(255,255,255,0.85) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.slider-handle.manual::before,
+.slider-handle.manual::after {
+  border-color: #ff5b2e;
+}
+
+.slider-drag.manual {
+  background: rgba(255, 91, 46, 0.08);
+}
 .slider-drag {
   position: absolute;
   top: 0; bottom: 0;
   width: 32px;
   margin-left: -16px;
   cursor: ew-resize;
+}
+
+/* Visual indicator on the slider when AI auto-animation is disabled (manual mode) */
+.slider-manual-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%) translateX(18px); /* offset to the right of the handle */
+  background: rgba(255, 91, 46, 0.15);
+  color: #ff5b2e;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 91, 46, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .labels {
