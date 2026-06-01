@@ -7,7 +7,7 @@ import { AIStatus } from "./components/ui/AIStatus";
 import { connectAiChannel } from "./ai/channel";
 import { useApp } from "./state/store";
 import { loadFile } from "./lib/image";
-import { callGrokForEdits, captureCurrentImageBase64 } from "./lib/grok";
+import { callGrokForEdits, askGrokForPlan, captureCurrentImageBase64, executeGrokPlan } from "./lib/grok";
 import { extractExif } from "./lib/exif";
 
 const WS_URL = import.meta.env.VITE_AI_WS ?? "";
@@ -33,6 +33,30 @@ export default function App() {
   // while the desktop keeps the full powerful 3-column pro layout
   const [mobileSheet, setMobileSheet] = useState<null | 'tools' | 'inspector' | 'ai'>(null);
 
+  // PWA Install prompt handling
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+    }
+    setDeferredPrompt(null);
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openFile = () => fileInputRef.current?.click();
@@ -50,6 +74,7 @@ export default function App() {
         }
         setIsTethered(false);
         useApp.getState().setAi({ busy: false, progress: 0 });
+        useApp.getState().setSlider(0.5);
 
         const loaded = await loadFile(file);
         loadImage("both", loaded);
@@ -67,9 +92,9 @@ export default function App() {
     e.target.value = "";
   };
 
-  // Grok AI Command Handler - real integration
-  const handleGrokCommand = async (command: string) => {
-    console.log('[Grok Command]', command);
+  // Grok AI Command Handler — now supports agentic plans
+  const handleGrokCommand = async (command: string, mode: 'direct' | 'plan' = 'direct') => {
+    console.log('[Grok Command]', command, 'mode:', mode);
     
     const apiKey = localStorage.getItem('grok_api_key') || prompt('Enter your xAI Grok API key (stored in browser):');
     if (!apiKey) return;
@@ -78,29 +103,65 @@ export default function App() {
     try {
       const imageBase64 = captureCurrentImageBase64();
       const currentAdj = useApp.getState().adjustments;
+      const activeRefs = useApp.getState().references
+        .filter(r => useApp.getState().activeReferenceIds.includes(r.id))
+        .map(r => r.url);
 
-      const result = await callGrokForEdits(apiKey, command, imageBase64, currentAdj);
+      if (mode === 'plan') {
+        // High-quality mode: ask Grok to create a full plan first
+        const planResult = await askGrokForPlan(apiKey, command, imageBase64, currentAdj, activeRefs);
+        
+        if (planResult?.plan) {
+          console.log('[Grok Plan]', planResult);
+          // For now we auto-execute the plan. In future we can show UI for approval.
+          executeGrokPlan(planResult.plan, {
+            setAdjustment: (key, value) => setAdjustment(key as any, value),
+            applyLut: (preset, intensity = 0.85) => {
+              setAdjustment('lutIntensity', intensity);
+              console.log(`Grok applied LUT: ${preset}`);
+            },
+            createMaskFromPrompt: (desc) => {
+              // Trigger SAM with description (best effort)
+              console.log('Grok wants mask:', desc);
+              useApp.getState().setSegmentTool('auto'); // crude but works for demo
+            },
+            setMaskScope: (scope) => {
+              useApp.getState().setAdjustmentScope({ 
+                useActiveMask: scope !== 'all',
+                invert: scope === 'background'
+              });
+            },
+            captureTether: () => {
+              const ws = (window as any).__aitoTether;
+              if (ws) ws.send(JSON.stringify({ type: 'capture' }));
+            }
+          });
+        }
+      } else {
+        // Fast direct mode (original behavior, improved)
+        const result = await callGrokForEdits(apiKey, command, imageBase64, currentAdj, activeRefs);
 
-      // Apply structured response
-      if (result.adjustments) {
-        Object.entries(result.adjustments).forEach(([key, value]) => {
-          if (typeof value === 'number') {
-            setAdjustment(key as any, value);
+        if (result.plan) {
+          executeGrokPlan(result.plan, {
+            setAdjustment: (key, value) => setAdjustment(key as any, value),
+            applyLut: (_preset, intensity = 0.85) => setAdjustment('lutIntensity', intensity),
+            createMaskFromPrompt: (desc) => console.log('Grok mask request:', desc),
+            setMaskScope: (scope) => useApp.getState().setAdjustmentScope({ 
+              useActiveMask: scope !== 'all' 
+            }),
+          });
+        } else {
+          // Legacy single response path
+          if (result.adjustments) {
+            Object.entries(result.adjustments).forEach(([key, value]) => {
+              if (typeof value === 'number') setAdjustment(key as any, value);
+            });
           }
-        });
+          if (result.lutName) {
+            setAdjustment('lutIntensity', result.intensity ?? 0.8);
+          }
+        }
       }
-
-      if (result.lutName) {
-        // In future: load specific LUT by name
-        setAdjustment('lutIntensity', result.intensity ?? 0.8);
-      }
-
-      if (result.maskPrompt && activeSegmentId) {
-        // Could trigger new SAM with the prompt (advanced)
-        console.log('Grok suggested mask:', result.maskPrompt);
-      }
-
-      console.log('[Grok Response]', result);
     } catch (err) {
       console.error('Grok call failed:', err);
       alert('Grok API error. Check key and console.');
@@ -302,13 +363,14 @@ export default function App() {
   useEffect(() => {
     // In live tether mode we control the slider manually — disable AI takeover animation
     // to prevent it from sliding back and forth with stale preview frames
-    if (sliderDragging || !ai.busy || isTethered) return;
+    const before = useApp.getState().before;
+    if (!before || sliderDragging || !ai.busy || isTethered) return;
     const target = 1 - ai.progress * 0.5;
     const id = requestAnimationFrame(() => {
       setSlider(slider + (target - slider) * 0.08);
     });
     return () => cancelAnimationFrame(id);
-  }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered]);
+  }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered, before]);
 
   return (
     <div className="app">
@@ -350,20 +412,56 @@ export default function App() {
           </button>
         )}
 
-        {/* AI Prompt — always visible for power users (matches launch thumbnails) */}
+        {/* PWA Install button (appears when browser allows) */}
+        {isInstallable && (
+          <button 
+            className="top-btn"
+            onClick={handleInstallClick}
+            title="Install aito as an app (PWA)"
+          >
+            Install
+          </button>
+        )}
+
+        {/* AI Prompt — now supports direct + high-quality planning mode */}
         <div className="ai-command-bar-inline">
           <input 
             type="text" 
-            placeholder="Ask Grok… (e.g. teal & orange blockbuster, +0.7 exposure, mask subject)"
+            placeholder="Ask Grok… (e.g. cinematic teal orange blockbuster, mask the subject, subtle film grain)"
             className="ai-input"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                handleGrokCommand(e.currentTarget.value);
+                handleGrokCommand(e.currentTarget.value, 'direct');
                 e.currentTarget.value = '';
               }
             }}
           />
-          <button className="ai-btn" onClick={() => { /* input handles enter */ }}>Send</button>
+          <button 
+            className="ai-btn" 
+            onClick={(e) => {
+              const input = (e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement);
+              if (input?.value.trim()) {
+                handleGrokCommand(input.value, 'direct');
+                input.value = '';
+              }
+            }}
+          >
+            Apply
+          </button>
+          <button 
+            className="ai-btn" 
+            style={{ background: '#333', color: '#ff9f1c' }}
+            title="Let Grok create a full multi-step plan first (higher quality for complex requests)"
+            onClick={(e) => {
+              const input = (e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement);
+              if (input?.value.trim()) {
+                handleGrokCommand(input.value, 'plan');
+                input.value = '';
+              }
+            }}
+          >
+            Plan
+          </button>
         </div>
         <button type="button" className="open-btn" onClick={openFile}>
           Open
@@ -489,15 +587,43 @@ export default function App() {
                   placeholder="Describe the look for Grok (film, exposure, mask, LUT...)"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                      handleGrokCommand(e.currentTarget.value);
+                      handleGrokCommand(e.currentTarget.value, 'plan'); // default to plan on mobile
                       e.currentTarget.value = '';
                       setMobileSheet(null);
                     }
                   }}
                   autoFocus
                 />
-                <div style={{ color: '#555', fontSize: '12px', lineHeight: 1.4 }}>
-                  Grok sees the current image and applies adjustments, LUTs, or masking instantly.
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <button 
+                    onClick={() => {
+                      const input = document.querySelector('.mobile-ai-input') as HTMLInputElement;
+                      if (input?.value.trim()) {
+                        handleGrokCommand(input.value, 'direct');
+                        input.value = '';
+                        setMobileSheet(null);
+                      }
+                    }}
+                    style={{ flex: 1, padding: '10px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '6px' }}
+                  >
+                    Quick Apply
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const input = document.querySelector('.mobile-ai-input') as HTMLInputElement;
+                      if (input?.value.trim()) {
+                        handleGrokCommand(input.value, 'plan');
+                        input.value = '';
+                        setMobileSheet(null);
+                      }
+                    }}
+                    style={{ flex: 1, padding: '10px', background: '#ff5b2e', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 600 }}
+                  >
+                    Plan with Grok
+                  </button>
+                </div>
+                <div style={{ color: '#555', fontSize: '12px', marginTop: '8px' }}>
+                  "Plan with Grok" creates a thoughtful multi-step edit sequence.
                 </div>
               </>
             )}

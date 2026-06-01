@@ -5,10 +5,11 @@ import App from "./App";
 import "./styles.css";
 const root = createRoot(document.getElementById("root"));
 root.render(_jsx(React.StrictMode, { children: _jsx(App, {}) }));
-// Register PWA service worker for offline + install on mobile
+// Register PWA service worker (uses relative path so it works under /aito/ on GitHub Pages)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {
+        const swUrl = import.meta.env.BASE_URL ? `${import.meta.env.BASE_URL}sw.js` : '/sw.js';
+        navigator.serviceWorker.register(swUrl).catch(() => {
             // Silent fail in dev or when not available
         });
     });

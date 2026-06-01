@@ -48,6 +48,8 @@ export const useApp = create((set) => ({
     isTethered: false,
     exif: null,
     tetherCamera: null,
+    references: [],
+    activeReferenceIds: [],
     bakeWalker: new BakeTreeWalker(),
     currentBakeHead: null,
     bakeHistory: [],
@@ -93,6 +95,25 @@ export const useApp = create((set) => ({
                 after: img.url,
                 beforeMeta: { width: img.width, height: img.height, name: img.name },
                 afterMeta: { width: img.width, height: img.height, name: img.name },
+                slider: 0.5,
+                ai: {
+                    progress: 0,
+                    confidence: 0,
+                    tilesReady: 0,
+                    focus: { x: 0.5, y: 0.5 },
+                    busy: false,
+                    status: "idle",
+                },
+                // Reset pixel effect and other layers to neutral for the new image
+                layers: [
+                    {
+                        id: nextId(),
+                        kind: "sampling",
+                        side: "after",
+                        enabled: true,
+                        props: { ...DEFAULTS.sampling, pixel: 1 },
+                    },
+                ],
                 ...clearSegs,
             };
         });
@@ -200,6 +221,27 @@ export const useApp = create((set) => ({
     setIsTethered: (v) => set({ isTethered: v }),
     setExif: (exif) => set({ exif }),
     setTetherCamera: (model) => set({ tetherCamera: model }),
+    // Reference Board implementation
+    addReference: (ref) => {
+        const id = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        const newRef = { ...ref, id };
+        set((s) => ({
+            references: [...s.references, newRef],
+            activeReferenceIds: [...s.activeReferenceIds, id]
+        }));
+        return id;
+    },
+    removeReference: (id) => set((s) => ({
+        references: s.references.filter(r => r.id !== id),
+        activeReferenceIds: s.activeReferenceIds.filter(rid => rid !== id)
+    })),
+    toggleActiveReference: (id) => set((s) => ({
+        activeReferenceIds: s.activeReferenceIds.includes(id)
+            ? s.activeReferenceIds.filter(rid => rid !== id)
+            : [...s.activeReferenceIds, id]
+    })),
+    clearReferences: () => set({ references: [], activeReferenceIds: [] }),
+    setActiveReferences: (ids) => set({ activeReferenceIds: ids }),
     // Live bake tree actions (tree-sitter walker + vwall ladder ready)
     appendBakeNode: (node) => set((s) => {
         s.bakeWalker.addNode(node);

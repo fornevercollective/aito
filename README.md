@@ -57,12 +57,21 @@ standalone.
 
 ## Mobile PWA
 
-aito is a first-class Progressive Web App. On iPhone or Android:
+aito is a full Progressive Web App with offline support.
 
+**Install on iOS / Android:**
 1. Open https://fornevercollective.github.io/aito/ in Safari or Chrome
-2. Tap Share → "Add to Home Screen"
+2. Tap **Share** → **Add to Home Screen**
 
-You get the full editor (slider, AI prompt, brush, tether controls) with native install feel and offline shell support.
+Once installed you get:
+- Native app-like experience (no browser chrome)
+- Offline access to the editor shell
+- Fast subsequent launches
+- The same powerful features as desktop (AI, tether, brush, LUTs)
+
+On desktop you can also install via the **Install** button that appears in the top bar when your browser supports it.
+
+The Service Worker aggressively caches the UI so the app remains usable even with poor connectivity.
 
 The interface adapts automatically:
 - Desktop → powerful 3-column layout with permanent inspector

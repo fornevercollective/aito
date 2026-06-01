@@ -1,5 +1,6 @@
 import { useApp } from "@/state/store";
 import { formatExifForDisplay } from "@/lib/exif";
+import { ReferenceBoard } from "./ReferenceBoard";
 
 interface TetherControlsProps {
   onCapture: () => void;
@@ -144,6 +145,9 @@ export function Inspector() {
           </div>
         </div>
       )}
+
+      {/* Reference Board - Krea-style realtime refs for commercial direction */}
+      <ReferenceBoard />
     </aside>
   );
 }

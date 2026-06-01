@@ -31,6 +31,14 @@ export interface ImageMeta {
   name?: string;
 }
 
+export interface Reference {
+  id: string;
+  url: string;           // data URL or blob URL
+  label: string;         // "Hero Product", "Talent Ref", "Mood Board", "Location", "Doodle", etc.
+  source: 'upload' | 'canvas' | 'tether' | 'doodle';
+  thumbnail?: string;    // smaller version if needed
+}
+
 export interface AppState {
   before: string;
   after: string;
@@ -100,6 +108,14 @@ export interface AppState {
   currentBakeHead: string | null; // id of the tip of the live bake tree
   bakeHistory: BakeNode[]; // flattened recent commits for UI rails
 
+  /** Reference boards for commercial work (like Krea realtime refs) */
+  references: Reference[];
+  activeReferenceIds: string[]; // which refs are currently "active" for Grok / generation
+
+  /** UI controls */
+  showInspector: boolean;           // right panel (tether + exif + references) collapsed state
+  sliderAutoAnimation: boolean;     // whether AI signals drive the before/after slider animation
+
   setSources(b: string, a: string, bMeta?: ImageMeta | null, aMeta?: ImageMeta | null): void;
   loadImage(target: "before" | "after" | "both", img: LoadedImage): void;
   setSlider(v: number): void;
@@ -129,6 +145,13 @@ export interface AppState {
   setIsTethered(v: boolean): void;
   setExif(exif: ExifData | null): void;
   setTetherCamera(model: string | null): void;
+
+  // Reference Board actions (Krea-style realtime refs for commercial)
+  addReference(ref: Omit<Reference, 'id'>): string;
+  removeReference(id: string): void;
+  toggleActiveReference(id: string): void;
+  clearReferences(): void;
+  setActiveReferences(ids: string[]): void;
 
   setAdjustmentScope(patch: Partial<AppState["adjustmentScope"]>): void;
 
@@ -198,6 +221,10 @@ export const useApp = create<AppState>((set) => ({
   isTethered: false,
   exif: null,
   tetherCamera: null,
+  references: [],
+  activeReferenceIds: [],
+  showInspector: true,
+  sliderAutoAnimation: true,
   bakeWalker: new BakeTreeWalker(),
   currentBakeHead: null,
   bakeHistory: [],
@@ -244,6 +271,25 @@ export const useApp = create<AppState>((set) => ({
         after: img.url,
         beforeMeta: { width: img.width, height: img.height, name: img.name },
         afterMeta: { width: img.width, height: img.height, name: img.name },
+        slider: 0.5,
+        ai: {
+          progress: 0,
+          confidence: 0,
+          tilesReady: 0,
+          focus: { x: 0.5, y: 0.5 },
+          busy: false,
+          status: "idle",
+        },
+        // Reset pixel effect and other layers to neutral for the new image
+        layers: [
+          {
+            id: nextId(),
+            kind: "sampling",
+            side: "after",
+            enabled: true,
+            props: { ...DEFAULTS.sampling, pixel: 1 },
+          },
+        ],
         ...clearSegs,
       };
     });
@@ -377,6 +423,28 @@ export const useApp = create<AppState>((set) => ({
   setIsTethered: (v: boolean) => set({ isTethered: v }),
   setExif: (exif) => set({ exif }),
   setTetherCamera: (model) => set({ tetherCamera: model }),
+
+  // Reference Board implementation
+  addReference: (ref) => {
+    const id = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const newRef: Reference = { ...ref, id };
+    set((s) => ({
+      references: [...s.references, newRef],
+      activeReferenceIds: [...s.activeReferenceIds, id]
+    }));
+    return id;
+  },
+  removeReference: (id) => set((s) => ({
+    references: s.references.filter(r => r.id !== id),
+    activeReferenceIds: s.activeReferenceIds.filter(rid => rid !== id)
+  })),
+  toggleActiveReference: (id) => set((s) => ({
+    activeReferenceIds: s.activeReferenceIds.includes(id)
+      ? s.activeReferenceIds.filter(rid => rid !== id)
+      : [...s.activeReferenceIds, id]
+  })),
+  clearReferences: () => set({ references: [], activeReferenceIds: [] }),
+  setActiveReferences: (ids) => set({ activeReferenceIds: ids }),
 
   // Live bake tree actions (tree-sitter walker + vwall ladder ready)
   appendBakeNode: (node: BakeNode) =>

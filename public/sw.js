@@ -1,58 +1,109 @@
-// Simple service worker for aito PWA
-// Provides offline support for the editor shell
+// Aggressive Service Worker for aito PWA
+// - Precaches app shell
+// - Runtime caching for images, fonts, JS/CSS chunks
+// - Good offline resilience for the editor
+// Note: The large ~23MB ONNX WASM is not precached (too big). It will be cached on first use.
 
-const CACHE_NAME = 'aito-v1';
-const ASSETS = [
+const CACHE_NAME = 'aito-v3';
+const SHELL_CACHE = 'aito-shell-v3';
+
+const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/logo.svg',
-  '/icons/icon.svg'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(SHELL_CACHE)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
+    caches.keys().then(keys =>
       Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        keys
+          .filter(key => ![CACHE_NAME, SHELL_CACHE].includes(key))
+          .map(key => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
+  const req = event.request;
+  if (req.method !== 'GET') return;
 
-  // Only handle GET
-  if (request.method !== 'GET') return;
+  const url = new URL(req.url);
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(request)
-        .then((response) => {
-          // Cache successful same-origin responses
-          if (response.ok && request.url.startsWith(self.location.origin)) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
+  // 1. Navigation (HTML) - Network first, fallback to cached shell
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req)
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          return res;
         })
-        .catch(() => {
-          // Offline fallback for navigation
-          if (request.mode === 'navigate') {
-            return caches.match('/');
+        .catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // 2. Images - Cache first, then network
+  if (req.destination === 'image' || /\.(png|jpg|jpeg|webp|gif|svg)$/i.test(url.pathname)) {
+    event.respondWith(
+      caches.match(req).then(cached => {
+        if (cached) return cached;
+        return fetch(req).then(res => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(req, copy));
           }
+          return res;
         });
-    })
-  );
+      })
+    );
+    return;
+  }
+
+  // 3. JS, CSS, Fonts, WASM - Stale-while-revalidate
+  if (['script', 'style', 'font'].includes(req.destination) || url.pathname.endsWith('.wasm')) {
+    event.respondWith(
+      caches.match(req).then(cached => {
+        const networkFetch = fetch(req).then(res => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          }
+          return res;
+        });
+        return cached || networkFetch;
+      })
+    );
+    return;
+  }
+
+  // 4. Everything else (same origin) - Cache first with network fallback
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      caches.match(req).then(cached => {
+        if (cached) return cached;
+        return fetch(req).then(res => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          }
+          return res;
+        }).catch(() => cached);
+      })
+    );
+  }
 });

@@ -8,7 +8,7 @@ import { AIStatus } from "./components/ui/AIStatus";
 import { connectAiChannel } from "./ai/channel";
 import { useApp } from "./state/store";
 import { loadFile } from "./lib/image";
-import { callGrokForEdits, captureCurrentImageBase64 } from "./lib/grok";
+import { callGrokForEdits, askGrokForPlan, captureCurrentImageBase64, executeGrokPlan } from "./lib/grok";
 import { extractExif } from "./lib/exif";
 const WS_URL = import.meta.env.VITE_AI_WS ?? "";
 export default function App() {
@@ -28,6 +28,28 @@ export default function App() {
     // Mobile sheet state — enables the clean, image-first "start of the concept" experience on phones/tablets
     // while the desktop keeps the full powerful 3-column pro layout
     const [mobileSheet, setMobileSheet] = useState(null);
+    // PWA Install prompt handling
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+    const [isInstallable, setIsInstallable] = useState(false);
+    useEffect(() => {
+        const handler = (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setIsInstallable(true);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
+    const handleInstallClick = async () => {
+        if (!deferredPrompt)
+            return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setIsInstallable(false);
+        }
+        setDeferredPrompt(null);
+    };
     const fileInputRef = useRef(null);
     const openFile = () => fileInputRef.current?.click();
     const onFileChosen = async (e) => {
@@ -58,9 +80,9 @@ export default function App() {
         // allow re-selecting the same file
         e.target.value = "";
     };
-    // Grok AI Command Handler - real integration
-    const handleGrokCommand = async (command) => {
-        console.log('[Grok Command]', command);
+    // Grok AI Command Handler — now supports agentic plans
+    const handleGrokCommand = async (command, mode = 'direct') => {
+        console.log('[Grok Command]', command, 'mode:', mode);
         const apiKey = localStorage.getItem('grok_api_key') || prompt('Enter your xAI Grok API key (stored in browser):');
         if (!apiKey)
             return;
@@ -68,24 +90,66 @@ export default function App() {
         try {
             const imageBase64 = captureCurrentImageBase64();
             const currentAdj = useApp.getState().adjustments;
-            const result = await callGrokForEdits(apiKey, command, imageBase64, currentAdj);
-            // Apply structured response
-            if (result.adjustments) {
-                Object.entries(result.adjustments).forEach(([key, value]) => {
-                    if (typeof value === 'number') {
-                        setAdjustment(key, value);
+            const activeRefs = useApp.getState().references
+                .filter(r => useApp.getState().activeReferenceIds.includes(r.id))
+                .map(r => r.url);
+            if (mode === 'plan') {
+                // High-quality mode: ask Grok to create a full plan first
+                const planResult = await askGrokForPlan(apiKey, command, imageBase64, currentAdj, activeRefs);
+                if (planResult?.plan) {
+                    console.log('[Grok Plan]', planResult);
+                    // For now we auto-execute the plan. In future we can show UI for approval.
+                    executeGrokPlan(planResult.plan, {
+                        setAdjustment: (key, value) => setAdjustment(key, value),
+                        applyLut: (preset, intensity = 0.85) => {
+                            setAdjustment('lutIntensity', intensity);
+                            console.log(`Grok applied LUT: ${preset}`);
+                        },
+                        createMaskFromPrompt: (desc) => {
+                            // Trigger SAM with description (best effort)
+                            console.log('Grok wants mask:', desc);
+                            useApp.getState().setSegmentTool('auto'); // crude but works for demo
+                        },
+                        setMaskScope: (scope) => {
+                            useApp.getState().setAdjustmentScope({
+                                useActiveMask: scope !== 'all',
+                                invert: scope === 'background'
+                            });
+                        },
+                        captureTether: () => {
+                            const ws = window.__aitoTether;
+                            if (ws)
+                                ws.send(JSON.stringify({ type: 'capture' }));
+                        }
+                    });
+                }
+            }
+            else {
+                // Fast direct mode (original behavior, improved)
+                const result = await callGrokForEdits(apiKey, command, imageBase64, currentAdj, activeRefs);
+                if (result.plan) {
+                    executeGrokPlan(result.plan, {
+                        setAdjustment: (key, value) => setAdjustment(key, value),
+                        applyLut: (_preset, intensity = 0.85) => setAdjustment('lutIntensity', intensity),
+                        createMaskFromPrompt: (desc) => console.log('Grok mask request:', desc),
+                        setMaskScope: (scope) => useApp.getState().setAdjustmentScope({
+                            useActiveMask: scope !== 'all'
+                        }),
+                    });
+                }
+                else {
+                    // Legacy single response path
+                    if (result.adjustments) {
+                        Object.entries(result.adjustments).forEach(([key, value]) => {
+                            if (typeof value === 'number')
+                                setAdjustment(key, value);
+                        });
                     }
-                });
+                    if (result.lutName) {
+                        setAdjustment('lutIntensity', result.intensity ?? 0.8);
+                    }
+                }
             }
-            if (result.lutName) {
-                // In future: load specific LUT by name
-                setAdjustment('lutIntensity', result.intensity ?? 0.8);
-            }
-            if (result.maskPrompt && activeSegmentId) {
-                // Could trigger new SAM with the prompt (advanced)
-                console.log('Grok suggested mask:', result.maskPrompt);
-            }
-            console.log('[Grok Response]', result);
         }
         catch (err) {
             console.error('Grok call failed:', err);
@@ -267,14 +331,15 @@ export default function App() {
     useEffect(() => {
         // In live tether mode we control the slider manually — disable AI takeover animation
         // to prevent it from sliding back and forth with stale preview frames
-        if (sliderDragging || !ai.busy || isTethered)
+        const before = useApp.getState().before;
+        if (!before || sliderDragging || !ai.busy || isTethered)
             return;
         const target = 1 - ai.progress * 0.5;
         const id = requestAnimationFrame(() => {
             setSlider(slider + (target - slider) * 0.08);
         });
         return () => cancelAnimationFrame(id);
-    }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered]);
+    }, [ai.busy, ai.progress, slider, sliderDragging, setSlider, isTethered, before]);
     return (_jsxs("div", { className: "app", children: [_jsxs("div", { className: "top", children: [_jsx("span", { className: "brand", children: "aito" }), _jsx("span", { style: { fontSize: '10px', color: '#444', marginLeft: '4px' }, children: "live" }), _jsx("a", { href: "/aito/hub/", className: "version-link", style: { color: '#888', marginLeft: '8px' }, children: "hub" }), _jsx("span", { className: "version-badge", children: "main" }), isTethered && (_jsxs("button", { className: "live-indicator live-view-btn", onClick: () => {
                             // Desktop: scroll hint (inspector always visible on right)
                             // Mobile: open the beautiful clean inspector sheet
@@ -285,12 +350,24 @@ export default function App() {
                                 const insp = document.querySelector('.inspector');
                                 insp?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                             }
-                        }, title: "Live tethered view \u2014 controls & EXIF", children: [_jsx("div", { className: "live-dot" }), "LIVE VIEW"] })), !isTethered && (_jsx("button", { className: "tether-btn", onClick: connectTether, title: "Connect to local camera companion (supports all major camera systems)", children: "Tether" })), _jsxs("div", { className: "ai-command-bar-inline", children: [_jsx("input", { type: "text", placeholder: "Ask Grok\u2026 (e.g. teal & orange blockbuster, +0.7 exposure, mask subject)", className: "ai-input", onKeyDown: (e) => {
+                        }, title: "Live tethered view \u2014 controls & EXIF", children: [_jsx("div", { className: "live-dot" }), "LIVE VIEW"] })), !isTethered && (_jsx("button", { className: "tether-btn", onClick: connectTether, title: "Connect to local camera companion (supports all major camera systems)", children: "Tether" })), isInstallable && (_jsx("button", { className: "top-btn", onClick: handleInstallClick, title: "Install aito as an app (PWA)", children: "Install" })), _jsxs("div", { className: "ai-command-bar-inline", children: [_jsx("input", { type: "text", placeholder: "Ask Grok\u2026 (e.g. cinematic teal orange blockbuster, mask the subject, subtle film grain)", className: "ai-input", onKeyDown: (e) => {
                                     if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                        handleGrokCommand(e.currentTarget.value);
+                                        handleGrokCommand(e.currentTarget.value, 'direct');
                                         e.currentTarget.value = '';
                                     }
-                                } }), _jsx("button", { className: "ai-btn", onClick: () => { }, children: "Send" })] }), _jsx("button", { type: "button", className: "open-btn", onClick: openFile, children: "Open" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
+                                } }), _jsx("button", { className: "ai-btn", onClick: (e) => {
+                                    const input = e.currentTarget.parentElement?.querySelector('input');
+                                    if (input?.value.trim()) {
+                                        handleGrokCommand(input.value, 'direct');
+                                        input.value = '';
+                                    }
+                                }, children: "Apply" }), _jsx("button", { className: "ai-btn", style: { background: '#333', color: '#ff9f1c' }, title: "Let Grok create a full multi-step plan first (higher quality for complex requests)", onClick: (e) => {
+                                    const input = e.currentTarget.parentElement?.querySelector('input');
+                                    if (input?.value.trim()) {
+                                        handleGrokCommand(input.value, 'plan');
+                                        input.value = '';
+                                    }
+                                }, children: "Plan" })] }), _jsx("button", { type: "button", className: "open-btn", onClick: openFile, children: "Open" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => {
                             const b = useApp.getState().before;
                             const bm = useApp.getState().beforeMeta;
                             useApp.getState().setSources(b, b, bm, bm);
@@ -299,9 +376,23 @@ export default function App() {
                             s.setSources(s.after, s.before, s.afterMeta, s.beforeMeta);
                         }, children: "Swap" }), _jsx("button", { type: "button", className: "top-btn primary", onClick: () => void exportCurrent(), children: "Export Full" }), adjustmentScope.useActiveMask && activeSegmentId && (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("subject"), children: "Export Subject" }), _jsx("button", { type: "button", className: "top-btn", onClick: () => void exportMasked("background"), children: "Export BG" })] })), _jsx("span", { className: "muted", children: "SAM \u00B7 corrections \u00B7 before/after" }), _jsx("div", { className: "spacer" }), _jsxs("span", { className: "muted", children: ["ws: ", _jsx("code", { children: WS_URL || "(mock)" }), " \u00B7 ", channel] }), _jsx("input", { ref: fileInputRef, type: "file", accept: "image/*", hidden: true, onChange: onFileChosen })] }), _jsx(BeforeAfter, {}), _jsxs("aside", { className: "panel", children: [_jsx("div", { className: "tabs", children: ["segment", "batch", "effects"].map((t) => (_jsx("button", { type: "button", className: tab === t ? "active" : "", onClick: () => setTabState(t), children: t }, t))) }), tab === "effects" && _jsx(ControlPanel, {}), tab === "segment" && _jsx(SegmentPanel, {}), tab === "batch" && _jsx(BatchPanel, {})] }), _jsx(Inspector, {}), _jsx(AIStatus, {}), _jsxs("div", { className: "mobile-bottom-bar", children: [_jsxs("button", { onClick: () => setMobileSheet('ai'), title: "AI / Grok", children: [_jsx("span", { className: "icon", children: "\u2726" }), _jsx("span", { children: "AI" })] }), _jsxs("button", { onClick: () => setMobileSheet('tools'), title: "Tools & masks", children: [_jsx("span", { className: "icon", children: "\u25D0" }), _jsx("span", { children: "Tools" })] }), _jsxs("button", { onClick: () => setMobileSheet('inspector'), className: isTethered ? 'active' : '', title: "Tether + Metadata", children: [_jsx("span", { className: "icon", children: "\u2B21" }), _jsx("span", { children: isTethered ? 'LIVE' : 'Info' })] }), _jsxs("button", { onClick: () => void exportCurrent(), title: "Export", children: [_jsx("span", { className: "icon", children: "\u2193" }), _jsx("span", { children: "Export" })] })] }), mobileSheet && (_jsxs("div", { className: `mobile-sheet ${mobileSheet ? 'open' : ''}`, children: [_jsxs("div", { className: "mobile-sheet-header", children: [_jsxs("div", { className: "title", children: [mobileSheet === 'ai' && 'AI Command', mobileSheet === 'tools' && 'Tools & Masking', mobileSheet === 'inspector' && (isTethered ? 'Live Tether + Metadata' : 'Metadata')] }), _jsx("button", { className: "close", onClick: () => setMobileSheet(null), children: "\u00D7" })] }), _jsxs("div", { className: "mobile-sheet-content", children: [mobileSheet === 'ai' && (_jsxs(_Fragment, { children: [_jsx("input", { type: "text", className: "mobile-ai-input", placeholder: "Describe the look for Grok (film, exposure, mask, LUT...)", onKeyDown: (e) => {
                                             if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                                handleGrokCommand(e.currentTarget.value);
+                                                handleGrokCommand(e.currentTarget.value, 'plan'); // default to plan on mobile
                                                 e.currentTarget.value = '';
                                                 setMobileSheet(null);
                                             }
-                                        }, autoFocus: true }), _jsx("div", { style: { color: '#555', fontSize: '12px', lineHeight: 1.4 }, children: "Grok sees the current image and applies adjustments, LUTs, or masking instantly." })] })), mobileSheet === 'tools' && (_jsxs(_Fragment, { children: [_jsx("div", { className: "tabs", style: { marginBottom: 12 }, children: ["segment", "batch", "effects"].map((t) => (_jsx("button", { type: "button", className: tab === t ? "active" : "", onClick: () => setTabState(t), children: t }, t))) }), tab === "effects" && _jsx(ControlPanel, {}), tab === "segment" && _jsx(SegmentPanel, {}), tab === "batch" && _jsx(BatchPanel, {})] })), mobileSheet === 'inspector' && (_jsx(Inspector, {}))] })] }))] }));
+                                        }, autoFocus: true }), _jsxs("div", { style: { display: 'flex', gap: '8px', marginTop: '8px' }, children: [_jsx("button", { onClick: () => {
+                                                    const input = document.querySelector('.mobile-ai-input');
+                                                    if (input?.value.trim()) {
+                                                        handleGrokCommand(input.value, 'direct');
+                                                        input.value = '';
+                                                        setMobileSheet(null);
+                                                    }
+                                                }, style: { flex: 1, padding: '10px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '6px' }, children: "Quick Apply" }), _jsx("button", { onClick: () => {
+                                                    const input = document.querySelector('.mobile-ai-input');
+                                                    if (input?.value.trim()) {
+                                                        handleGrokCommand(input.value, 'plan');
+                                                        input.value = '';
+                                                        setMobileSheet(null);
+                                                    }
+                                                }, style: { flex: 1, padding: '10px', background: '#ff5b2e', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 600 }, children: "Plan with Grok" })] }), _jsx("div", { style: { color: '#555', fontSize: '12px', marginTop: '8px' }, children: "\"Plan with Grok\" creates a thoughtful multi-step edit sequence." })] })), mobileSheet === 'tools' && (_jsxs(_Fragment, { children: [_jsx("div", { className: "tabs", style: { marginBottom: 12 }, children: ["segment", "batch", "effects"].map((t) => (_jsx("button", { type: "button", className: tab === t ? "active" : "", onClick: () => setTabState(t), children: t }, t))) }), tab === "effects" && _jsx(ControlPanel, {}), tab === "segment" && _jsx(SegmentPanel, {}), tab === "batch" && _jsx(BatchPanel, {})] })), mobileSheet === 'inspector' && (_jsx(Inspector, {}))] })] }))] }));
 }
