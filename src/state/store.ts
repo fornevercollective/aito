@@ -66,6 +66,7 @@ export interface AppState {
     lutIntensity: number; // 0..1 for LUT strength (AI + film emulation ready)
     sharpen: number;      // 0..2
     vignette: number;     // -1..1
+    customLutUrl?: string; // for user-uploaded Hald/CLUT images
   };
 
   /** How the adjustments are scoped (core of masked corrections). */
@@ -165,6 +166,7 @@ export const useApp = create<AppState>((set) => ({
     lutIntensity: 0,
     sharpen: 0,
     vignette: 0,
+    customLutUrl: undefined,
   },
   adjustmentScope: {
     useActiveMask: false,

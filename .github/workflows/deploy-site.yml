@@ -46,20 +46,23 @@ jobs:
       - name: Install all dependencies (root + workspaces)
         run: npm ci
 
-      # 1. Build the Astro umbrella hub first — this will be the root/start page at /aito/
-      - name: Build Astro hub (start page + versions/iterations)
+      # 1. Build the main aito editor as the primary experience at /aito/
+      - name: Build main aito editor (primary live product at /aito/)
+        env:
+          VITE_BASE: /aito/
+        run: |
+          npm run build
+
+      # 2. Build Astro hub for the iterations overview (placed under /hub)
+      - name: Build Astro hub (iterations + living-canvas research)
         run: |
           cd site
           npm run build
+          mkdir -p ../dist/hub
+          cp -r dist/* ../dist/hub/
 
-      # 2. Build the main aito editor and place it under /versions/main/ (not the landing yet)
-      - name: Build main aito editor (for /aito/versions/main/)
-        env:
-          VITE_BASE: /aito/versions/main/
-        run: |
-          npm run build
-          mkdir -p site/dist/versions/main
-          cp -r dist/* site/dist/versions/main/
+      # The editor dist is the root artifact. Hub is at /hub
+      # versions/ pages can stay in Astro or be static copies
 
       # Future iterations can add similar steps, e.g.
       # - name: Build living-canvas preview (when ready)
@@ -68,7 +71,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/dist
+          path: dist
 
   deploy:
     environment:

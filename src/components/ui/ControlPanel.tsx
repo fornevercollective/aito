@@ -5,6 +5,7 @@ import type {
   EffectPropsByKind,
   EffectSide,
 } from "@/effects/types";
+import { LUT_PRESETS, applyLutPreset } from "@/lib/lutPresets";
 
 interface AdjField {
   key: keyof ReturnType<typeof useApp.getState>["adjustments"];
@@ -166,9 +167,42 @@ export function ControlPanel() {
           </div>
         </div>
 
-        {/* LUT Support - AI + Krea-style realtime color grading */}
+        {/* LUT Creation / Detection / Styling - VSCO, Film, Cinema, Lens, Grok-powered */}
         <div style={{ marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
-          <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 4 }}>LUT (Film Emulation)</div>
+          <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
+            <span>LUT Styling</span>
+            <span style={{ fontSize: 9, opacity: 0.6 }}>AI + Presets</span>
+          </div>
+
+          <select 
+            value={adj.lutPreset || 'none'} 
+            onChange={(e) => {
+              const presetId = e.target.value;
+              setAdj('lutPreset', presetId);
+              if (presetId !== 'none') {
+                applyLutPreset(presetId, setAdj);
+              }
+            }}
+            style={{ width: '100%', marginBottom: 6, background: '#111', color: '#eee', border: '1px solid #333', padding: 4 }}
+          >
+            <option value="none">None / Custom</option>
+            <optgroup label="VSCO / Film">
+              <option value="vsco-kodak-portra">VSCO Kodak Portra</option>
+              <option value="vsco-fuji-superia">VSCO Fuji Superia</option>
+              <option value="film-kodak-2383">Kodak 2383 (Cinema)</option>
+              <option value="film-fuji-3510">Fuji 3510</option>
+            </optgroup>
+            <optgroup label="Cinema LUTs">
+              <option value="cinema-teal-orange">Teal & Orange Blockbuster</option>
+              <option value="cinema-bleach-bypass">Bleach Bypass</option>
+              <option value="cinema-vintage">Vintage 70s</option>
+            </optgroup>
+            <optgroup label="Lens Effects">
+              <option value="lens-anamorphic">Anamorphic Flare</option>
+              <option value="lens-vintage-glass">Vintage Glass</option>
+            </optgroup>
+          </select>
+
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input 
               type="range" 
@@ -181,8 +215,27 @@ export function ControlPanel() {
             />
             <span style={{width: 32, fontSize: 11}}>{((adj.lutIntensity ?? 0) * 100).toFixed(0)}%</span>
           </div>
-          <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>
-            Upload .cube or Hald CLUT (coming in next iteration). Grok can suggest LUTs from prompts.
+
+          <div style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <label style={{ fontSize: 10, padding: '2px 6px', background: '#222', cursor: 'pointer' }}>
+              Load Custom LUT
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  setAdj('customLutUrl', url);
+                  setAdj('lutIntensity', 0.8);
+                  alert('Custom LUT loaded (simulated). Full 3D sampling coming soon.');
+                }
+              }} />
+            </label>
+            <button onClick={() => {
+              // Trigger Grok LUT suggestion from main app context
+              window.dispatchEvent(new CustomEvent('aito:grok-lut-suggest'));
+            }} style={{ fontSize: 10, padding: '2px 6px' }}>Ask Grok</button>
+          </div>
+          <div style={{ fontSize: 9, color: "#555", marginTop: 2 }}>
+            Presets auto-apply film/cinema looks. Grok can detect style from image or create new ones.
           </div>
         </div>
 

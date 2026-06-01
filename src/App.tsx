@@ -6,6 +6,7 @@ import { AIStatus } from "./components/ui/AIStatus";
 import { connectAiChannel } from "./ai/channel";
 import { useApp } from "./state/store";
 import { loadFile } from "./lib/image";
+import { callGrokForEdits, captureCurrentImageBase64 } from "./lib/grok";
 
 const WS_URL = import.meta.env.VITE_AI_WS ?? "";
 
@@ -47,35 +48,44 @@ export default function App() {
     e.target.value = "";
   };
 
-  // Grok AI Command Handler - designed for real-time + structured edits
-  const handleGrokCommand = (command: string) => {
+  // Grok AI Command Handler - real integration
+  const handleGrokCommand = async (command: string) => {
     console.log('[Grok Command]', command);
     
-    // Simple local heuristics for now (will be replaced with real Grok API)
-    const lower = command.toLowerCase();
-    
-    if (lower.includes('teal') || lower.includes('cinematic')) {
-      setAdjustment('temperature', 0.35);
-      setAdjustment('tint', -0.25);
-      setAdjustment('contrast', 0.25);
-      setAdjustment('saturation', 0.15);
+    const apiKey = localStorage.getItem('grok_api_key') || prompt('Enter your xAI Grok API key (stored in browser):');
+    if (!apiKey) return;
+    localStorage.setItem('grok_api_key', apiKey);
+
+    try {
+      const imageBase64 = captureCurrentImageBase64();
+      const currentAdj = useApp.getState().adjustments;
+
+      const result = await callGrokForEdits(apiKey, command, imageBase64, currentAdj);
+
+      // Apply structured response
+      if (result.adjustments) {
+        Object.entries(result.adjustments).forEach(([key, value]) => {
+          if (typeof value === 'number') {
+            setAdjustment(key as any, value);
+          }
+        });
+      }
+
+      if (result.lutName) {
+        // In future: load specific LUT by name
+        setAdjustment('lutIntensity', result.intensity ?? 0.8);
+      }
+
+      if (result.maskPrompt && activeSegmentId) {
+        // Could trigger new SAM with the prompt (advanced)
+        console.log('Grok suggested mask:', result.maskPrompt);
+      }
+
+      console.log('[Grok Response]', result);
+    } catch (err) {
+      console.error('Grok call failed:', err);
+      alert('Grok API error. Check key and console.');
     }
-    
-    if (lower.includes('high contrast') || lower.includes('punchy')) {
-      setAdjustment('contrast', 0.4);
-    }
-    
-    if (lower.includes('film') || lower.includes('grain')) {
-      setAdjustment('lutIntensity', 0.65);
-    }
-    
-    if (lower.includes('warm') || lower.includes('golden')) {
-      setAdjustment('temperature', 0.6);
-    }
-    
-    // Future: Send full command + current adjustments + image to Grok for structured response
-    // Example response shape we want from Grok:
-    // { adjustments: {...}, lut: "kodak-2383", maskPrompt: "subject", intensity: 0.8 }
   };
 
   // Live Tether to local devices (inspired by fornevercollective/overview live lab tools)
