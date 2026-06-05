@@ -1,6 +1,7 @@
 // Grok (xAI) integration — upgraded to agentic photo editor
 // Supports planning + real tool calling for multi-step, high-quality edits.
 const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
+import { getAllPresetSlugs } from './lutPresets.js';
 // Master-level system prompt for aito
 const MASTER_EDITOR_PROMPT = `You are a world-class cinematic colorist and retoucher working inside the aito photo editor.
 
@@ -8,7 +9,7 @@ Your job is to interpret the user's creative intent and translate it into precis
 
 Available tools:
 - set_adjustments: exposure, contrast, saturation, temperature, tint, clarity, sharpen, vignette, lutIntensity (values roughly -1 to +1 or 0-1)
-- apply_lut: preset names like "kodak-portra-400", "fuji-superia", "teal-orange-blockbuster", "bleach-bypass", "vintage-70s"
+- apply_lut: preset slug from the imagine catalog (e.g. "kodak-portra-400", "dark-academia", "teal-orange-blockbuster", "bleach-bypass-lut", ...). Full list: src/data/imagine-presets.json (source /Users/qbit/dev/imagine/style_presets)
 - create_mask: natural language description for SAM (e.g. "the person", "the sky", "background")
 - set_mask_scope: "subject", "background", or "all"
 - add_bake_note: short label for the edit history
@@ -221,7 +222,8 @@ export const AITO_GROK_TOOLS = [
                 properties: {
                     preset: {
                         type: "string",
-                        enum: ["kodak-portra-400", "fuji-superia", "teal-orange-blockbuster", "bleach-bypass", "vintage-70s", "kodak-2383", "fuji-3510"]
+                        description: "Canonical slug from the imagine style catalog at /Users/qbit/dev/imagine/style_presets. See src/data/imagine-presets.json.",
+                        enum: (typeof getAllPresetSlugs === 'function' ? getAllPresetSlugs() : ["kodak-portra-400", "teal-orange-blockbuster", "bleach-bypass-lut", "dark-academia", "fuji-superia-400"])
                     },
                     intensity: { type: "number", minimum: 0, maximum: 1 }
                 }

@@ -69,6 +69,8 @@ Launch the StageForge TUI to drive the plan iteratively:
 
 - `src/effects/shaders/` — one shader per file, all small and
   commented. Easy to swap individually.
+- `src/data/imagine-presets.json` + `scripts/sync-imagine-presets.mjs` — full support
+  for the LUT / style catalog living at sibling `/Users/qbit/dev/imagine/style_presets/`.
 - `src/ai/mapper.ts` — the AI-control vocabulary.
 - `src/components/EffectLayer.tsx` — the shader dispatcher; lookups
   for enum uniforms (animation type, falloff type, etc.) live here.

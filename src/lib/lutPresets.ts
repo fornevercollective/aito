@@ -1,74 +1,118 @@
 // LUT Presets System for aito
-// Supports VSCO, Film Stocks, Cinema Looks, Lens Effects
-// Grok can suggest or "create" new ones by describing the look.
+// Supports VSCO, Film Stocks, Cinema Looks, Lens Effects + full imagine catalog.
+// ---------------------------------------------------------------------------
+// Full catalog is synced from the sibling workspace:
+//   /Users/qbit/dev/imagine/style_presets/
+// (styles.json is the manifest; prompt.txt per folder carries the exact
+// film-production language passed to Grok Imagine for consistent looks.)
+// Run `npm run sync:imagine-presets` when the upstream catalog changes.
+// The JSON lives at src/data/imagine-presets.json so it is bundled for PWA/offline.
+
+import imaginePresets from '@/data/imagine-presets.json';
+
+export interface ImaginePreset {
+  slug: string;
+  display: string;
+  category: string;
+  tags?: string[];
+}
 
 export interface LutPreset {
-  id: string;
+  id: string; // canonical imagine slug, e.g. "kodak-portra-400"
   name: string;
-  category: 'vsco' | 'film' | 'cinema' | 'lens';
+  category: 'film_emulation' | 'cinematic_genre' | 'pinterest_aesthetic' | 'lens' | 'other';
   description: string;
-  // Simulated via adjustments + lutIntensity for now
-  // Future: actual 3D LUT texture or Hald CLUT
+  // Simulated via adjustments + lutIntensity for now (until real .cube / 3D LUT sampling)
+  // Future: actual 3D LUT texture or Hald CLUT + real film grain/weave shaders
   adjustments: Partial<Record<string, number>>;
   lutIntensity: number;
 }
 
-export const LUT_PRESETS: LutPreset[] = [
-  {
-    id: 'vsco-kodak-portra',
-    name: 'VSCO Kodak Portra',
-    category: 'vsco',
-    description: 'Soft skin tones, natural contrast, slight warmth',
-    adjustments: { temperature: 0.15, contrast: -0.1, saturation: 0.1 },
-    lutIntensity: 0.9,
-  },
-  {
-    id: 'vsco-fuji-superia',
-    name: 'VSCO Fuji Superia',
-    category: 'vsco',
-    description: 'Punchy greens, cool shadows, film grain feel',
-    adjustments: { temperature: -0.2, saturation: 0.25, contrast: 0.15 },
-    lutIntensity: 0.85,
-  },
-  {
-    id: 'film-kodak-2383',
-    name: 'Kodak 2383 (Cinema)',
-    category: 'cinema',
-    description: 'Classic film print look, rich blacks, warm highlights',
-    adjustments: { contrast: 0.3, temperature: 0.25, saturation: -0.05 },
-    lutIntensity: 0.95,
-  },
-  {
-    id: 'cinema-teal-orange',
-    name: 'Teal & Orange Blockbuster',
-    category: 'cinema',
-    description: 'Modern cinematic — cool shadows, warm skin',
-    adjustments: { temperature: 0.4, tint: -0.35, contrast: 0.35, saturation: 0.2 },
-    lutIntensity: 0.8,
-  },
-  {
-    id: 'lens-anamorphic',
-    name: 'Anamorphic Flare',
-    category: 'lens',
-    description: 'Horizontal blue flares, oval bokeh, vintage lens character',
-    adjustments: { temperature: -0.1, vignette: -0.2 },
-    lutIntensity: 0.7,
-  },
-];
+// Map imagine category + tags -> simulated adjustment seeds (tasteful starting points)
+function defaultAdjustmentsFor(p: ImaginePreset): Partial<Record<string, number>> {
+  const c = p.category;
+  const tags = (p.tags || []).join(' ').toLowerCase();
+  const a: Partial<Record<string, number>> = {};
+
+  if (c === 'film_emulation') {
+    a.lutIntensity = 0.88;
+    if (tags.includes('warm') || tags.includes('portra') || tags.includes('gold')) a.temperature = 0.12;
+    if (tags.includes('cool') || tags.includes('superia')) a.temperature = -0.15;
+    if (tags.includes('bw') || tags.includes('tri-x') || tags.includes('acros') || tags.includes('hp5')) {
+      a.saturation = -0.6; a.contrast = 0.1;
+    }
+    if (tags.includes('saturated') || tags.includes('velvia') || tags.includes('ektar')) a.saturation = 0.25;
+    if (tags.includes('grain') || tags.includes('ultramax')) a.vignette = -0.08;
+    if (tags.includes('cinematic') || tags.includes('eterna') || tags.includes('vision3')) a.contrast = 0.15;
+  } else if (c === 'cinematic_genre') {
+    a.lutIntensity = 0.82;
+    if (tags.includes('teal') || tags.includes('blockbuster') || p.slug.includes('teal-orange')) {
+      a.temperature = 0.35; a.tint = -0.3; a.contrast = 0.3;
+    }
+    if (tags.includes('bleach') || tags.includes('bypass')) { a.contrast = 0.4; a.saturation = -0.25; }
+    if (tags.includes('anamorphic') || tags.includes('lens') || tags.includes('flare')) a.vignette = -0.15;
+    if (tags.includes('vhs') || tags.includes('grain') || tags.includes('horror')) a.contrast = 0.1;
+    if (tags.includes('noir') || tags.includes('dramatic')) { a.contrast = 0.35; a.saturation = -0.2; }
+  } else if (c === 'pinterest_aesthetic') {
+    a.lutIntensity = 0.78;
+    if (tags.includes('soft') || tags.includes('light') || tags.includes('clean')) a.contrast = -0.1;
+    if (tags.includes('moody') || tags.includes('dark') || tags.includes('grunge')) a.contrast = 0.15;
+    if (tags.includes('pink') || tags.includes('barbie') || tags.includes('y2k')) a.saturation = 0.2;
+  } else {
+    a.lutIntensity = 0.75;
+  }
+  return a;
+}
+
+const RAW: ImaginePreset[] = (imaginePresets as any).presets || [];
+
+export const LUT_PRESETS: LutPreset[] = RAW.map((p) => {
+  const adj = defaultAdjustmentsFor(p);
+  const intensity = (adj.lutIntensity as number) ?? 0.82;
+  delete (adj as any).lutIntensity;
+  return {
+    id: p.slug,
+    name: p.display,
+    category: (p.category as any) || 'other',
+    description: p.tags?.slice(0, 3).join(', ') || p.category,
+    adjustments: adj,
+    lutIntensity: intensity,
+  };
+});
+
+// Legacy id aliases (old UI ids -> new canonical imagine slugs) for smooth transition
+const LEGACY_ALIASES: Record<string, string> = {
+  'vsco-kodak-portra': 'kodak-portra-400',
+  'vsco-fuji-superia': 'fuji-superia-400',
+  'film-kodak-2383': 'kodak-vision3-500t',
+  'film-fuji-3510': 'fuji-eterna-500',
+  'cinema-teal-orange': 'teal-orange-blockbuster',
+  'cinema-bleach-bypass': 'bleach-bypass-lut',
+  'cinema-vintage': 'vintage-35mm',
+  'lens-anamorphic': 'anamorphic-cinematic',
+  'lens-vintage-glass': 'vintage-35mm',
+};
+
+export function resolvePresetId(presetId: string): string {
+  return LEGACY_ALIASES[presetId] || presetId;
+}
 
 export function applyLutPreset(presetId: string, setAdj: (key: string, val: number) => void) {
-  const preset = LUT_PRESETS.find(p => p.id === presetId);
+  const resolved = resolvePresetId(presetId);
+  const preset = LUT_PRESETS.find(p => p.id === resolved);
   if (!preset) return;
 
   Object.entries(preset.adjustments).forEach(([key, val]) => {
     if (val !== undefined) setAdj(key, val);
   });
   setAdj('lutIntensity', preset.lutIntensity);
+  // Also record the canonical preset name so AI / state use imagine slugs
+  (setAdj as any)('lutPreset', resolved);
 }
 
 // Future: Grok can return a custom preset description and we can synthesize adjustments
 export function synthesizeLutFromDescription(description: string) {
-  // Simple heuristic — in production this would be Grok-generated
+  // Simple heuristic — in production this would be Grok-generated or matched against imagine catalog
   const lower = description.toLowerCase();
   const adj: any = {};
 
@@ -82,4 +126,14 @@ export function synthesizeLutFromDescription(description: string) {
     lutIntensity: 0.75,
     suggestedName: description.slice(0, 40),
   };
+}
+
+// For UI / Grok tool schema: the live list of canonical slugs (from imagine)
+export function getAllPresetSlugs(): string[] {
+  return LUT_PRESETS.map(p => p.id);
+}
+
+export function getPresetById(id: string): LutPreset | undefined {
+  const resolved = resolvePresetId(id);
+  return LUT_PRESETS.find(p => p.id === resolved);
 }

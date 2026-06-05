@@ -6,7 +6,7 @@
 
 - Real-time Grok commands (adjustments, LUTs, masking)
 - Live camera tethering via local companion (Canon, Sony, Phase One, etc.)
-- Film-accurate LUTs + custom .cube support
+- Film-accurate LUTs + custom .cube support (50+ presets from sibling `~/dev/imagine/style_presets`)
 - SAM-powered masked corrections + pressure-sensitive brush
 - Hatch export (subject / background / full)
 - Works as a beautiful mobile PWA on iPhone and Android
@@ -166,3 +166,10 @@ of Jay Ji's Framer "Reveals" components (Sampling / Unfocused / Burn /
 Glass / Magnifier / Crack). No code is copied from the marketplace
 components; only the property-control vocabulary is mirrored so the
 experience is recognizable.
+
+### Style catalog
+Film + aesthetic LUT language is maintained in the sibling repo at
+`/Users/qbit/dev/imagine/style_presets/` (styles.json + per-preset prompt.txt).
+aito vendors a snapshot at `src/data/imagine-presets.json` (see `npm run sync:imagine-presets`
+and `src/lib/lutPresets.ts`). Grok apply_lut tool and the LUT dropdown use the same
+canonical slugs (e.g. `kodak-portra-400`, `teal-orange-blockbuster`).

@@ -11,7 +11,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# --- PATH hygiene (matches blank / stageforge conventions) ---
+# --- PATH hygiene (matches blank / stageforge / imagine conventions) ---
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/go/bin:$PATH"
 if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
   # shellcheck source=/dev/null

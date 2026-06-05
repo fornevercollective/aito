@@ -1,74 +1,61 @@
-// LUT Presets System for aito
-// Supports VSCO, Film Stocks, Cinema Looks, Lens Effects
-// Grok can suggest or "create" new ones by describing the look.
-export const LUT_PRESETS = [
-    {
-        id: 'vsco-kodak-portra',
-        name: 'VSCO Kodak Portra',
-        category: 'vsco',
-        description: 'Soft skin tones, natural contrast, slight warmth',
-        adjustments: { temperature: 0.15, contrast: -0.1, saturation: 0.1 },
-        lutIntensity: 0.9,
-    },
-    {
-        id: 'vsco-fuji-superia',
-        name: 'VSCO Fuji Superia',
-        category: 'vsco',
-        description: 'Punchy greens, cool shadows, film grain feel',
-        adjustments: { temperature: -0.2, saturation: 0.25, contrast: 0.15 },
-        lutIntensity: 0.85,
-    },
-    {
-        id: 'film-kodak-2383',
-        name: 'Kodak 2383 (Cinema)',
-        category: 'cinema',
-        description: 'Classic film print look, rich blacks, warm highlights',
-        adjustments: { contrast: 0.3, temperature: 0.25, saturation: -0.05 },
-        lutIntensity: 0.95,
-    },
-    {
-        id: 'cinema-teal-orange',
-        name: 'Teal & Orange Blockbuster',
-        category: 'cinema',
-        description: 'Modern cinematic — cool shadows, warm skin',
-        adjustments: { temperature: 0.4, tint: -0.35, contrast: 0.35, saturation: 0.2 },
-        lutIntensity: 0.8,
-    },
-    {
-        id: 'lens-anamorphic',
-        name: 'Anamorphic Flare',
-        category: 'lens',
-        description: 'Horizontal blue flares, oval bokeh, vintage lens character',
-        adjustments: { temperature: -0.1, vignette: -0.2 },
-        lutIntensity: 0.7,
-    },
-];
+// LUT Presets System for aito (JS companion for legacy modules)
+// Supports the full catalog from sibling /Users/qbit/dev/imagine/style_presets
+// See lutPresets.ts for the canonical implementation + sync notes.
+
+import imaginePresets from '@/data/imagine-presets.json';
+
+export const LEGACY_ALIASES = {
+  'vsco-kodak-portra': 'kodak-portra-400',
+  'vsco-fuji-superia': 'fuji-superia-400',
+  'film-kodak-2383': 'kodak-vision3-500t',
+  'film-fuji-3510': 'fuji-eterna-500',
+  'cinema-teal-orange': 'teal-orange-blockbuster',
+  'cinema-bleach-bypass': 'bleach-bypass-lut',
+  'cinema-vintage': 'vintage-35mm',
+  'lens-anamorphic': 'anamorphic-cinematic',
+  'lens-vintage-glass': 'vintage-35mm',
+};
+
+function resolvePresetId(presetId) {
+  return LEGACY_ALIASES[presetId] || presetId;
+}
+
+const RAW = (imaginePresets && imaginePresets.presets) || [];
+export const LUT_PRESETS = RAW.map((p) => ({
+  id: p.slug,
+  name: p.display,
+  category: p.category || 'other',
+  description: (p.tags || []).slice(0,3).join(', ') || p.category,
+  adjustments: {},
+  lutIntensity: 0.82,
+}));
+
 export function applyLutPreset(presetId, setAdj) {
-    const preset = LUT_PRESETS.find(p => p.id === presetId);
-    if (!preset)
-        return;
-    Object.entries(preset.adjustments).forEach(([key, val]) => {
-        if (val !== undefined)
-            setAdj(key, val);
-    });
-    setAdj('lutIntensity', preset.lutIntensity);
+  const resolved = resolvePresetId(presetId);
+  const preset = LUT_PRESETS.find(p => p.id === resolved) || LUT_PRESETS.find(p => p.id === presetId);
+  if (!preset) {
+    try { (setAdj)('lutPreset', resolved); } catch {}
+    setAdj('lutIntensity', 0.8);
+    return;
+  }
+  const tags = (RAW.find(r => r.slug === preset.id) || {}).tags || [];
+  const tstr = tags.join(' ').toLowerCase();
+  if (tstr.includes('warm') || preset.id.includes('portra')) setAdj('temperature', 0.12);
+  if (tstr.includes('teal') || preset.id.includes('teal-orange')) { setAdj('temperature', 0.35); setAdj('tint', -0.28); }
+  if (tstr.includes('bleach') || preset.id.includes('bleach')) setAdj('contrast', 0.35);
+  setAdj('lutIntensity', preset.lutIntensity);
+  try { (setAdj)('lutPreset', resolved); } catch {}
 }
-// Future: Grok can return a custom preset description and we can synthesize adjustments
+
 export function synthesizeLutFromDescription(description) {
-    // Simple heuristic — in production this would be Grok-generated
-    const lower = description.toLowerCase();
-    const adj = {};
-    if (lower.includes('warm') || lower.includes('golden'))
-        adj.temperature = 0.5;
-    if (lower.includes('cool') || lower.includes('teal'))
-        adj.temperature = -0.3;
-    if (lower.includes('contrast') || lower.includes('punchy'))
-        adj.contrast = 0.3;
-    if (lower.includes('soft') || lower.includes('skin'))
-        adj.contrast = -0.15;
-    return {
-        adjustments: adj,
-        lutIntensity: 0.75,
-        suggestedName: description.slice(0, 40),
-    };
+  const lower = description.toLowerCase();
+  const adj = {};
+  if (lower.includes('warm') || lower.includes('golden')) adj.temperature = 0.5;
+  if (lower.includes('cool') || lower.includes('teal')) adj.temperature = -0.3;
+  if (lower.includes('contrast') || lower.includes('punchy')) adj.contrast = 0.3;
+  if (lower.includes('soft') || lower.includes('skin')) adj.contrast = -0.15;
+  return { adjustments: adj, lutIntensity: 0.75, suggestedName: description.slice(0, 40) };
 }
+
+export function getAllPresetSlugs() { return LUT_PRESETS.map(p => p.id); }
+export function getPresetById(id) { const r=resolvePresetId(id); return LUT_PRESETS.find(p=>p.id===r); }

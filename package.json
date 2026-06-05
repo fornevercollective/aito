@@ -18,7 +18,8 @@
     "mock:server": "python3 server/inference_ws.py",
     "mock:telemetry": "python3 server/mock_ws.py",
     "launch": "bash start.sh",
-    "launch:stageforge": "bash Launch-StageForge.command"
+    "launch:stageforge": "bash Launch-StageForge.command",
+    "sync:imagine-presets": "node scripts/sync-imagine-presets.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",

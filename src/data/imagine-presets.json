@@ -1,0 +1,620 @@
+{
+  "_meta": {
+    "source": "/Users/qbit/dev/imagine/style_presets/styles.json",
+    "total": 51,
+    "note": "Source of truth for aito LUT / film emulation / aesthetic presets. Run `npm run sync:imagine-presets` after updates in the sibling `~/dev/imagine` project. This gives aito full access to the rich catalog of 50+ film stocks, cinema LUTs, anamorphic lenses, Pinterest aesthetics, and edit descriptors maintained in imagine/.",
+    "generated": "2026-06-05T18:46:09.813Z"
+  },
+  "presets": [
+    {
+      "slug": "kodak-portra-400",
+      "display": "Kodak Portra 400",
+      "category": "film_emulation",
+      "tags": [
+        "kodak",
+        "vsco",
+        "portrait",
+        "natural",
+        "warm",
+        "film"
+      ]
+    },
+    {
+      "slug": "kodak-ektar-100",
+      "display": "Kodak Ektar 100",
+      "category": "film_emulation",
+      "tags": [
+        "kodak",
+        "vsco",
+        "saturated",
+        "vibrant",
+        "landscape"
+      ]
+    },
+    {
+      "slug": "kodak-gold-200",
+      "display": "Kodak Gold 200",
+      "category": "film_emulation",
+      "tags": [
+        "kodak",
+        "vsco",
+        "vintage",
+        "warm",
+        "90s"
+      ]
+    },
+    {
+      "slug": "kodak-ultramax-400",
+      "display": "Kodak Ultramax 400",
+      "category": "film_emulation",
+      "tags": [
+        "kodak",
+        "vsco",
+        "everyday",
+        "grainy"
+      ]
+    },
+    {
+      "slug": "kodak-tri-x-400-bw",
+      "display": "Kodak Tri-X 400 (B&W)",
+      "category": "film_emulation",
+      "tags": [
+        "kodak",
+        "bw",
+        "vsco",
+        "grain",
+        "classic"
+      ]
+    },
+    {
+      "slug": "fuji-velvia-50",
+      "display": "Fuji Velvia 50",
+      "category": "film_emulation",
+      "tags": [
+        "fuji",
+        "vsco",
+        "saturated",
+        "landscape",
+        "vivid"
+      ]
+    },
+    {
+      "slug": "fuji-superia-400",
+      "display": "Fuji Superia 400",
+      "category": "film_emulation",
+      "tags": [
+        "fuji",
+        "vsco",
+        "90s",
+        "consumer",
+        "grain"
+      ]
+    },
+    {
+      "slug": "fuji-pro-400h",
+      "display": "Fuji Pro 400H",
+      "category": "film_emulation",
+      "tags": [
+        "fuji",
+        "vsco",
+        "portrait",
+        "professional",
+        "soft"
+      ]
+    },
+    {
+      "slug": "fuji-acros-100-bw",
+      "display": "Fuji Acros 100 (B&W)",
+      "category": "film_emulation",
+      "tags": [
+        "fuji",
+        "bw",
+        "vsco",
+        "fine-grain",
+        "portrait"
+      ]
+    },
+    {
+      "slug": "fuji-eterna-500",
+      "display": "Fuji Eterna 500",
+      "category": "film_emulation",
+      "tags": [
+        "fuji",
+        "cinematic",
+        "movie",
+        "low-contrast"
+      ]
+    },
+    {
+      "slug": "cinestill-50d",
+      "display": "Cinestill 50D",
+      "category": "film_emulation",
+      "tags": [
+        "cinestill",
+        "cinematic",
+        "halations",
+        "daylight"
+      ]
+    },
+    {
+      "slug": "cinestill-800t",
+      "display": "Cinestill 800T",
+      "category": "film_emulation",
+      "tags": [
+        "cinestill",
+        "cinematic",
+        "night",
+        "tungsten",
+        "halations"
+      ]
+    },
+    {
+      "slug": "ilford-hp5-400-bw",
+      "display": "Ilford HP5 Plus 400 (B&W)",
+      "category": "film_emulation",
+      "tags": [
+        "ilford",
+        "bw",
+        "vsco",
+        "versatile",
+        "grain"
+      ]
+    },
+    {
+      "slug": "kodachrome-64",
+      "display": "Kodachrome 64",
+      "category": "film_emulation",
+      "tags": [
+        "kodak",
+        "slide",
+        "vintage",
+        "saturated",
+        "iconic"
+      ]
+    },
+    {
+      "slug": "cottagecore",
+      "display": "Cottagecore",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "cozy",
+        "rural",
+        "soft",
+        "pastel"
+      ]
+    },
+    {
+      "slug": "dark-academia",
+      "display": "Dark Academia",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "moody",
+        "academic",
+        "browns",
+        "library"
+      ]
+    },
+    {
+      "slug": "light-academia",
+      "display": "Light Academia",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "soft",
+        "academic",
+        "cream",
+        "sunny"
+      ]
+    },
+    {
+      "slug": "fairycore",
+      "display": "Fairycore",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "ethereal",
+        "fantasy",
+        "pastel",
+        "nature"
+      ]
+    },
+    {
+      "slug": "old-money-aesthetic",
+      "display": "Old Money Aesthetic",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "luxury",
+        "quiet",
+        "neutral",
+        "heritage"
+      ]
+    },
+    {
+      "slug": "clean-girl",
+      "display": "Clean Girl Aesthetic",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "minimal",
+        "glowy",
+        "modern",
+        "skin"
+      ]
+    },
+    {
+      "slug": "y2k-aesthetic",
+      "display": "Y2K Aesthetic",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "2000s",
+        "chrome",
+        "pink",
+        "futuristic"
+      ]
+    },
+    {
+      "slug": "cybercore",
+      "display": "Cybercore",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "cyber",
+        "tech",
+        "neon",
+        "futuristic"
+      ]
+    },
+    {
+      "slug": "grunge-90s",
+      "display": "Grunge 90s",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "90s",
+        "grunge",
+        "flannel",
+        "moody"
+      ]
+    },
+    {
+      "slug": "barbiecore",
+      "display": "Barbiecore",
+      "category": "pinterest_aesthetic",
+      "tags": [
+        "pinterest",
+        "pink",
+        "barbie",
+        "playful",
+        "saturated"
+      ]
+    },
+    {
+      "slug": "film-noir",
+      "display": "Film Noir",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "bw",
+        "noir",
+        "dramatic",
+        "shadows"
+      ]
+    },
+    {
+      "slug": "neo-noir",
+      "display": "Neo-Noir",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "noir",
+        "color",
+        "rain",
+        "urban"
+      ]
+    },
+    {
+      "slug": "cyberpunk-neon",
+      "display": "Cyberpunk Neon",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "cyberpunk",
+        "neon",
+        "night",
+        "future"
+      ]
+    },
+    {
+      "slug": "teal-orange-blockbuster",
+      "display": "Teal Orange Blockbuster",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "teal-orange",
+        "hollywood",
+        "action"
+      ]
+    },
+    {
+      "slug": "western-sepia",
+      "display": "Western Sepia / Dusty",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "western",
+        "sepia",
+        "dusty",
+        "vintage"
+      ]
+    },
+    {
+      "slug": "horror-grain",
+      "display": "Horror / Desaturated Grain",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "horror",
+        "grain",
+        "desaturated",
+        "eerie"
+      ]
+    },
+    {
+      "slug": "dune-sci-fi",
+      "display": "Dune Sci-Fi Epic",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "sci-fi",
+        "desert",
+        "epic",
+        "denis"
+      ]
+    },
+    {
+      "slug": "golden-hour-romance",
+      "display": "Golden Hour Romance",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "romance",
+        "warm",
+        "golden",
+        "soft"
+      ]
+    },
+    {
+      "slug": "vhs-80s",
+      "display": "VHS 80s / Lo-fi",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "vhs",
+        "80s",
+        "lofi",
+        "analog"
+      ]
+    },
+    {
+      "slug": "anamorphic-cinematic",
+      "display": "Anamorphic Cinematic",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "anamorphic",
+        "lens",
+        "flares",
+        "widescreen"
+      ]
+    },
+    {
+      "slug": "ethereal-fantasy",
+      "display": "Ethereal Fantasy",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "fantasy",
+        "ethereal",
+        "glow",
+        "soft"
+      ]
+    },
+    {
+      "slug": "gritty-documentary",
+      "display": "Gritty Documentary",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "documentary",
+        "gritty",
+        "natural",
+        "handheld"
+      ]
+    },
+    {
+      "slug": "vintage-35mm",
+      "display": "Vintage 35mm Film Fade",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "vintage",
+        "35mm",
+        "fade",
+        "grain"
+      ]
+    },
+    {
+      "slug": "moody-teal-drama",
+      "display": "Moody Teal Drama",
+      "category": "cinematic_genre",
+      "tags": [
+        "cinematic",
+        "teal",
+        "moody",
+        "drama",
+        "netflix"
+      ]
+    },
+    {
+      "slug": "kodak-vision3-500t",
+      "display": "Kodak Vision3 500T (Motion Picture)",
+      "category": "film_emulation",
+      "tags": [
+        "kodak",
+        "motion-picture",
+        "cinematic",
+        "lut",
+        "night",
+        "tungsten"
+      ]
+    },
+    {
+      "slug": "fuji-eterna-250d",
+      "display": "Fuji Eterna 250D (Motion Picture)",
+      "category": "film_emulation",
+      "tags": [
+        "fuji",
+        "motion-picture",
+        "cinematic",
+        "lut",
+        "daylight"
+      ]
+    },
+    {
+      "slug": "arri-alexa-logc-to-rec709",
+      "display": "ARRI Alexa LogC to Rec.709 (Digital Cinema LUT)",
+      "category": "film_emulation",
+      "tags": [
+        "arri",
+        "digital-cinema",
+        "lut",
+        "color-correction",
+        "logc"
+      ]
+    },
+    {
+      "slug": "bleach-bypass-lut",
+      "display": "Bleach Bypass / Skip Bleach LUT",
+      "category": "cinematic_genre",
+      "tags": [
+        "lut",
+        "color-correction",
+        "contrast",
+        "desat",
+        "saving-private-ryan"
+      ]
+    },
+    {
+      "slug": "teal-orange-hollywood-cc",
+      "display": "Teal-Orange Hollywood Color Correction LUT",
+      "category": "cinematic_genre",
+      "tags": [
+        "lut",
+        "color-correction",
+        "blockbuster",
+        "teal-orange"
+      ]
+    },
+    {
+      "slug": "panavision-c-series-anamorphic",
+      "display": "Panavision C-Series Anamorphic Lenses",
+      "category": "cinematic_genre",
+      "tags": [
+        "lens",
+        "anamorphic",
+        "panavision",
+        "distortion",
+        "flares"
+      ]
+    },
+    {
+      "slug": "cooke-anamorphic",
+      "display": "Cooke Anamorphic /i Lenses",
+      "category": "cinematic_genre",
+      "tags": [
+        "lens",
+        "anamorphic",
+        "cooke",
+        "distortion",
+        "bokeh"
+      ]
+    },
+    {
+      "slug": "heavy-35mm-film-grain-gate-weave",
+      "display": "Heavy 35mm Film Grain + Gate Weave + Dirt",
+      "category": "film_emulation",
+      "tags": [
+        "film-effect",
+        "grain",
+        "weave",
+        "dirt",
+        "scratches",
+        "analog"
+      ]
+    },
+    {
+      "slug": "anamorphic-lens-breathing-flare",
+      "display": "Anamorphic Lens Breathing + Flares",
+      "category": "cinematic_genre",
+      "tags": [
+        "lens",
+        "breathing",
+        "flare",
+        "distortion",
+        "effect"
+      ]
+    },
+    {
+      "slug": "fisheye-extreme-distortion",
+      "display": "Fisheye / Extreme Wide Lens Distortion",
+      "category": "cinematic_genre",
+      "tags": [
+        "lens",
+        "fisheye",
+        "distortion",
+        "wide",
+        "effect"
+      ]
+    },
+    {
+      "slug": "j-cut-l-cut-audio-lead",
+      "display": "J-Cut / L-Cut Audio Lead (Edit Timeline)",
+      "category": "cinematic_genre",
+      "tags": [
+        "edit",
+        "timeline",
+        "audio",
+        "sound-design",
+        "transition"
+      ]
+    },
+    {
+      "slug": "cross-process-e-6-to-c-41",
+      "display": "Cross-Process (E-6 to C-41) LUT",
+      "category": "cinematic_genre",
+      "tags": [
+        "lut",
+        "cross-process",
+        "color",
+        "vintage",
+        "effect"
+      ]
+    },
+    {
+      "slug": "day-for-night-lut",
+      "display": "Day for Night / Nuit Américaine LUT",
+      "category": "cinematic_genre",
+      "tags": [
+        "lut",
+        "day-for-night",
+        "effect",
+        "night",
+        "classic"
+      ]
+    }
+  ]
+}

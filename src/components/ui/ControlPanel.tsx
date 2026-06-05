@@ -5,7 +5,7 @@ import type {
   EffectPropsByKind,
   EffectSide,
 } from "@/effects/types";
-import { applyLutPreset } from "@/lib/lutPresets";
+import { applyLutPreset, LUT_PRESETS } from "@/lib/lutPresets";
 
 interface AdjField {
   key: keyof ReturnType<typeof useApp.getState>["adjustments"];
@@ -187,21 +187,23 @@ export function ControlPanel() {
             style={{ width: '100%', marginBottom: 6, background: '#111', color: '#eee', border: '1px solid #333', padding: 4 }}
           >
             <option value="none">None / Custom</option>
-            <optgroup label="VSCO / Film">
-              <option value="vsco-kodak-portra">VSCO Kodak Portra</option>
-              <option value="vsco-fuji-superia">VSCO Fuji Superia</option>
-              <option value="film-kodak-2383">Kodak 2383 (Cinema)</option>
-              <option value="film-fuji-3510">Fuji 3510</option>
-            </optgroup>
-            <optgroup label="Cinema LUTs">
-              <option value="cinema-teal-orange">Teal & Orange Blockbuster</option>
-              <option value="cinema-bleach-bypass">Bleach Bypass</option>
-              <option value="cinema-vintage">Vintage 70s</option>
-            </optgroup>
-            <optgroup label="Lens Effects">
-              <option value="lens-anamorphic">Anamorphic Flare</option>
-              <option value="lens-vintage-glass">Vintage Glass</option>
-            </optgroup>
+            {(() => {
+              const groups: Record<string, typeof LUT_PRESETS> = {};
+              for (const p of LUT_PRESETS) {
+                const g = p.category || 'other';
+                (groups[g] ||= []).push(p);
+              }
+              const order = ['film_emulation', 'cinematic_genre', 'pinterest_aesthetic'];
+              return order
+                .filter(k => groups[k])
+                .map((cat) => (
+                  <optgroup key={cat} label={cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}>
+                    {groups[cat].map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </optgroup>
+                ));
+            })()}
           </select>
 
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -236,7 +238,7 @@ export function ControlPanel() {
             }} style={{ fontSize: 10, padding: '2px 6px' }}>Ask Grok</button>
           </div>
           <div style={{ fontSize: 9, color: "#555", marginTop: 2 }}>
-            Presets auto-apply film/cinema looks. Grok can detect style from image or create new ones.
+            Presets from ~/dev/imagine (50+ film stocks, cinema LUTs, aesthetics). Grok uses the same slugs.
           </div>
         </div>
 

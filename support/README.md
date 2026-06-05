@@ -19,3 +19,5 @@ The .app simply opens Terminal and runs `./start.sh`.
 ## Philosophy
 
 These launchers (`.command` files + optional .app) + `stageforge.yaml` give the project the same "control surface + roadmap driver" UX used in `blank` and other active workspaces. The StageForge TUI becomes the place where the team (human or agent) iterates through the approved photo editing plan in a structured way.
+
+Sibling workspace support: LUT/film/aesthetic presets are consumed from `/Users/qbit/dev/imagine/style_presets` (see top-level `scripts/sync-imagine-presets.mjs` and `src/lib/lutPresets.ts`).
