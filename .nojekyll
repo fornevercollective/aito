@@ -1,0 +1,3 @@
+# Prevent GitHub Pages / Jekyll from processing this repository as a Jekyll site.
+# The actual site is a static build (Vite + Astro) deployed via GitHub Actions.
+# See .github/workflows/deploy-site.yml and the invalid YAML frontmatter errors on .astro files.

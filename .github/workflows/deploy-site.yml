@@ -1,5 +1,12 @@
 name: Deploy Astro Test Site
 
+# IMPORTANT: For this workflow to be the source of truth for GitHub Pages (and to
+# avoid the legacy Jekyll processor running on our source tree and choking on
+# .astro frontmatter like ---import ...--- ), go to the repo Settings → Pages and
+# set "Source" under "Build and deployment" to "GitHub Actions".
+#
+# We also commit a root `.nojekyll` and ensure one is in the artifact as defense-in-depth.
+
 on:
   push:
     branches: [ main, master ]
@@ -53,22 +60,45 @@ jobs:
         run: |
           npm run build
 
-      # 2. Build Astro hub with base /aito/hub/ (the launch page + research)
-      - name: Build Astro hub (placed under /hub)
-        env:
-          ASTRO_BASE: /aito/hub/
+      # 2. Build the Astro marketing site (hub + brand + pricing + license + versions/*).
+      # We do the selective copy in the next step so we can place pages at the
+      # correct /aito/* paths without clobbering the Vite editor's index.html at root.
+      - name: Build Astro marketing site (hub, brand, pricing, versions, etc.)
         run: |
           cd site
           npm run build
-          mkdir -p ../dist/hub
-          cp -r dist/* ../dist/hub/
 
-      # The editor dist is the root artifact. Hub is at /hub
-      # versions/ pages can stay in Astro or be static copies
+      # Place the Astro marketing pages (brand, pricing, license, versions/*, hub/) at the
+      # correct top-level paths under /aito/. Selectively copy subdirectories only, to avoid
+      # clobbering the main Vite editor's dist/index.html (the live product at /aito/).
+      # The preceding "Build Astro marketing site" step produced the files with the proper
+      # default base so that links and BASE_URL resolve to /aito/* .
+      - name: Place top-level Astro marketing pages (brand, pricing, versions, license, hub)
+        run: |
+          cd site
+          cp -r dist/brand ../dist/ 2>/dev/null || true
+          cp -r dist/pricing ../dist/ 2>/dev/null || true
+          cp -r dist/license ../dist/ 2>/dev/null || true
+          cp -r dist/versions ../dist/ 2>/dev/null || true
+          cp -r dist/hub ../dist/ 2>/dev/null || true
+          # Static assets at site root (favicons, logo) if not provided by editor build
+          cp -n dist/favicon.* ../dist/ 2>/dev/null || true
+          cp -n dist/logo.svg ../dist/ 2>/dev/null || true
 
       # Future iterations can add similar steps, e.g.
       # - name: Build living-canvas preview (when ready)
       #   ...
+
+      # Ensure .nojekyll is present in the published artifact so that if GitHub's
+      # legacy Pages/Jekyll processor ever inspects the output, it won't try to
+      # parse our static HTML (or any leftover files) as Jekyll content with YAML.
+      # The root .nojekyll in the repo also suppresses processing of source files
+      # like site/src/**/*.astro that contain Astro frontmatter (--- ... ---).
+      - name: Add .nojekyll to published site root
+        run: |
+          touch dist/.nojekyll
+          # Also for the hub subdir in case it is accessed directly
+          touch dist/hub/.nojekyll 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
