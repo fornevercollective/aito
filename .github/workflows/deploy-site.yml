@@ -98,13 +98,11 @@ jobs:
           # Ensure directory indexes work on Pages
           touch dist/spatial/.nojekyll
           touch dist/spatial/booth/.nojekyll
-          # Optional wasm modulator if present
+          # wasm next to booth so ../wasm/booth_modulator.wasm resolves
           if [ -f spatial/wasm/booth_modulator.wasm ]; then
-            mkdir -p dist/spatial/booth/../wasm dist/wasm
+            mkdir -p dist/spatial/wasm dist/wasm
+            cp -f spatial/wasm/booth_modulator.wasm dist/spatial/wasm/booth_modulator.wasm
             cp -f spatial/wasm/booth_modulator.wasm dist/wasm/booth_modulator.wasm
-            # booth may fetch /wasm/… relative to site root under /aito/
-            mkdir -p dist/spatial/wasm
-            cp -f spatial/wasm/booth_modulator.wasm dist/spatial/wasm/booth_modulator.wasm 2>/dev/null || true
           fi
           ls -la dist/spatial/booth | head -20
           test -f dist/spatial/booth/index.html

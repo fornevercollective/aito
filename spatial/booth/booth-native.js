@@ -14,7 +14,29 @@
   async function loadWasmModulator() {
     if (wasmMod) return wasmMod;
     try {
-      const resp = await fetch("/wasm/booth_modulator.wasm");
+      // Relative candidates so GH Pages (/aito/spatial/booth/) and localhost :8768 both work
+      const here = document.baseURI || location.href;
+      const wasmCandidates = [
+        new URL("../wasm/booth_modulator.wasm", here).href,
+        new URL("wasm/booth_modulator.wasm", here).href,
+        new URL("../../wasm/booth_modulator.wasm", here).href,
+        "/wasm/booth_modulator.wasm",
+        "/aito/wasm/booth_modulator.wasm",
+        "/aito/spatial/wasm/booth_modulator.wasm",
+      ];
+      let resp = null;
+      for (const u of wasmCandidates) {
+        try {
+          const r = await fetch(u);
+          if (r.ok) {
+            resp = r;
+            break;
+          }
+        } catch {
+          /* try next */
+        }
+      }
+      if (!resp) return null;
       if (!resp.ok) return null;
       const { instance } = await WebAssembly.instantiate(await resp.arrayBuffer(), {});
       wasmMod = instance.exports;
