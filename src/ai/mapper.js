@@ -8,6 +8,7 @@
  *
  * Tweaking the visual language of the app is mostly editing this file.
  */
+import { handToGlassUniforms, readBoothBridge } from "@/lib/spatial-depth";
 const lerp = (a, b, t) => a + (b - a) * t;
 export const aiMappers = {
     /**
@@ -40,12 +41,29 @@ export const aiMappers = {
     /**
      * Glass = depth/3D preview hook. Confidence biases depth so a
      * well-trusted gsplat bake renders crisply; uncertain bakes go
-     * rougher.
+     * rougher. When aito-mac booth hand bridge is present, nest hand
+     * depth/wave into glass (Splatline / booth spatial path).
      */
-    glass: (ai) => ({
-        depth: 0.3 + 0.4 * ai.confidence,
-        roughness: 0.05 + 0.25 * (1 - ai.confidence),
-    }),
+    glass: (ai) => {
+        let depth = 0.3 + 0.4 * ai.confidence;
+        let roughness = 0.05 + 0.25 * (1 - ai.confidence);
+        let bump;
+        let dispersion;
+        const bridge = readBoothBridge();
+        if (bridge?.hand) {
+            const h = handToGlassUniforms(bridge.hand);
+            depth = lerp(depth, h.depth, 0.55);
+            roughness = lerp(roughness, h.roughness, 0.4);
+            bump = h.bump;
+            dispersion = h.dispersion;
+        }
+        return {
+            depth,
+            roughness,
+            ...(bump != null ? { bump } : {}),
+            ...(dispersion != null ? { dispersion } : {}),
+        };
+    },
     /**
      * Magnifier = "look here" call-out. The radius grows briefly at the
      * end of the job to draw the eye to the focus point.

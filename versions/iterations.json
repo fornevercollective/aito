@@ -10,6 +10,13 @@
       "type": "editor"
     },
     {
+      "id": "spatial",
+      "title": "Spatial Live \u00b7 gsplat",
+      "description": "gsplat booth \u2014 multi-source live, hands, depth cloud, ffmpeg media.",
+      "status": "active",
+      "demoPath": "spatial/"
+    },
+    {
       "id": "living-canvas",
       "title": "Living Canvas Pivot",
       "status": "research",

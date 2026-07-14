@@ -1,0 +1,148 @@
+---
+const base = import.meta.env.BASE_URL || '/aito/';
+const boothHref = `${base}spatial/booth/`;
+const editorHref = base;
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content="aito Spatial Live — gsplat booth, multi-source live feeds, hands, depth cloud, ffmpeg media."
+  />
+  <title>Spatial Live · gsplat — aito</title>
+  <style>
+    :root {
+      --bg: #0a0a0b;
+      --fg: #e7e7ea;
+      --accent: #ff5b2e;
+      --muted: #8a8a93;
+      --card: #111113;
+      --line: #222;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, system-ui, sans-serif;
+      line-height: 1.55;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    .nav {
+      display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+      margin-bottom: 2.5rem; font-size: 0.9rem;
+    }
+    .nav a { color: var(--muted); text-decoration: none; }
+    .nav a:hover { color: var(--accent); }
+    .kicker {
+      color: var(--accent); font-size: 0.75rem; letter-spacing: 0.12em;
+      text-transform: uppercase; margin: 0 0 0.75rem;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.03em;
+      margin: 0 0 0.75rem; line-height: 1.1;
+    }
+    .lead { color: var(--muted); font-size: 1.15rem; max-width: 36rem; margin: 0 0 1.75rem; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2.5rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.85rem 1.25rem; border-radius: 8px; font-weight: 600;
+      text-decoration: none; border: 1px solid transparent; transition: 0.12s ease;
+    }
+    .btn-primary { background: var(--accent); color: #0a0a0b; }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-ghost { background: #1a1a1d; color: var(--fg); border-color: var(--line); }
+    .btn-ghost:hover { border-color: #444; }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem; margin: 2rem 0;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      padding: 1.25rem 1.35rem;
+    }
+    .card h3 { margin: 0 0 0.4rem; font-size: 1rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .code {
+      background: #0e0e10; border: 1px solid var(--line); border-radius: 10px;
+      padding: 1rem 1.15rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem; color: #c8c8d0; overflow-x: auto; margin: 1rem 0 0;
+    }
+    .code span { color: #6a6a75; }
+    .note {
+      margin-top: 2rem; padding: 1rem 1.15rem; border-left: 3px solid var(--accent);
+      background: #141416; border-radius: 0 8px 8px 0; color: var(--muted); font-size: 0.95rem;
+    }
+    .note strong { color: var(--fg); }
+    footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a href={editorHref}>← Editor</a>
+      <a href={`${base}hub/`}>Hub</a>
+      <a href={`${base}versions/living-canvas/`}>Living Canvas</a>
+      <a href="https://github.com/fornevercollective/aito">GitHub</a>
+    </nav>
+
+    <p class="kicker">aito · spatial live</p>
+    <h1>gsplat workflow</h1>
+    <p class="lead">
+      Multi-source live booth — Continuity cameras, X/HLS/MKV feeds, MediaPipe hands,
+      ZipDepth spatial cloud, and ffmpeg (all codecs · image sequences · FPS).
+    </p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href={boothHref}>Open gsplat booth →</a>
+      <a class="btn btn-ghost" href={editorHref}>Photo editor</a>
+      <a class="btn btn-ghost" href="https://github.com/fornevercollective/aito/tree/master/spatial">Source · spatial/</a>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Live capture</h3>
+        <p>Desktop · Continuity iPhone · Dual · Desk View. Secure context (HTTPS or localhost).</p>
+      </div>
+      <div class="card">
+        <h3>Feeds → stage</h3>
+        <p>X.com video, HLS, mp4, MKV via ffmpeg, image sequences, alternate FPS → cloud sample.</p>
+      </div>
+      <div class="card">
+        <h3>Hands · depth</h3>
+        <p>MediaPipe IK + optional ZipDepth monocular cloud layer for spatial control.</p>
+      </div>
+      <div class="card">
+        <h3>Full local stack</h3>
+        <p>Media APIs, FFplay/repel, JAX/ZipDepth sidecars need the monorepo server on :8768.</p>
+      </div>
+    </div>
+
+    <h2 style="font-size:1.15rem;margin:2rem 0 0.5rem">Run full spatial live locally</h2>
+    <p style="color:var(--muted);margin:0">Clone the monorepo for ffmpeg media, ffplay, and depth sidecars:</p>
+    <pre class="code"><span># from monorepo root</span>
+./Launch-Spatial.command
+<span># → http://127.0.0.1:8768/booth/</span>
+
+npm run spatial:open</pre>
+
+    <div class="note">
+      <strong>On this Pages host:</strong> the booth UI runs in the browser (camera + WebGL + CDN models).
+      Local-only APIs (<code>/api/media</code>, ZipDepth :8766, JAX :8767) activate when you run
+      <code>./Launch-Spatial.command</code> from
+      <a href="https://github.com/fornevercollective/aito">fornevercollective/aito</a>.
+    </div>
+
+    <footer>
+      <a href={boothHref}>/spatial/booth/</a> ·
+      <a href={`${base}hub/`}>hub</a> ·
+      part of <a href="https://github.com/fornevercollective/aito">aito monorepo</a>
+    </footer>
+  </div>
+</body>
+</html>

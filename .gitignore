@@ -29,3 +29,6 @@ spatial/mac/**/DerivedData/
 .vscode/
 *.swp
 *.swo
+
+spatial/music/*
+!spatial/music/.gitkeep

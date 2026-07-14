@@ -111,7 +111,8 @@ export default function App() {
                         setAdjustment: (key, value) => setAdjustment(key, value),
                         applyLut: (preset, intensity = 0.85) => {
                             setAdjustment('lutIntensity', intensity);
-                            if (preset) setAdjustment('lutPreset', preset);
+                            if (preset)
+                                setAdjustment('lutPreset', preset);
                             console.log(`Grok applied LUT: ${preset}`);
                         },
                         createMaskFromPrompt: (desc) => {
@@ -139,7 +140,8 @@ export default function App() {
                 if (result.plan) {
                     executeGrokPlan(result.plan, {
                         setAdjustment: (key, value) => setAdjustment(key, value),
-                        applyLut: (preset, intensity = 0.85) => { setAdjustment('lutIntensity', intensity); if (preset) setAdjustment('lutPreset', preset); },
+                        applyLut: (preset, intensity = 0.85) => { setAdjustment('lutIntensity', intensity); if (preset)
+                            setAdjustment('lutPreset', preset); },
                         createMaskFromPrompt: (desc) => console.log('Grok mask request:', desc),
                         setMaskScope: (scope) => useApp.getState().setAdjustmentScope({
                             useActiveMask: scope !== 'all'

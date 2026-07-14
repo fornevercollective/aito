@@ -18,8 +18,9 @@ permissions:
   id-token: write
 
 concurrency:
+  # One deploy at a time; cancel older pushes so main+master don't race
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -68,37 +69,52 @@ jobs:
           cd site
           npm run build
 
-      # Place the Astro marketing pages (brand, pricing, license, versions/*, hub/) at the
-      # correct top-level paths under /aito/. Selectively copy subdirectories only, to avoid
-      # clobbering the main Vite editor's dist/index.html (the live product at /aito/).
-      # The preceding "Build Astro marketing site" step produced the files with the proper
-      # default base so that links and BASE_URL resolve to /aito/* .
-      - name: Place top-level Astro marketing pages (brand, pricing, versions, license, hub)
+      # Place Astro marketing pages under /aito/* without clobbering the Vite editor index.
+      - name: Place top-level Astro marketing pages (brand, pricing, versions, license, hub, spatial)
         run: |
+          set -e
           cd site
-          cp -r dist/brand ../dist/ 2>/dev/null || true
-          cp -r dist/pricing ../dist/ 2>/dev/null || true
-          cp -r dist/license ../dist/ 2>/dev/null || true
-          cp -r dist/versions ../dist/ 2>/dev/null || true
-          cp -r dist/hub ../dist/ 2>/dev/null || true
+          for dir in brand pricing license versions hub spatial; do
+            if [ -d "dist/$dir" ]; then
+              rm -rf "../dist/$dir"
+              cp -r "dist/$dir" ../dist/
+            fi
+          done
           # Static assets at site root (favicons, logo) if not provided by editor build
           cp -n dist/favicon.* ../dist/ 2>/dev/null || true
           cp -n dist/logo.svg ../dist/ 2>/dev/null || true
 
-      # Future iterations can add similar steps, e.g.
-      # - name: Build living-canvas preview (when ready)
-      #   ...
+      # Publish gsplat booth static UI at /aito/spatial/booth/ (relative imports; CDN three/MediaPipe).
+      # Local-only APIs (/api/media, ZipDepth, JAX) still need ./Launch-Spatial.command.
+      - name: Publish spatial gsplat booth under /aito/spatial/booth/
+        run: |
+          set -e
+          mkdir -p dist/spatial/booth
+          # Booth modules only — no absolute music symlink, no binaries
+          rsync -a \
+            --exclude '.DS_Store' \
+            --exclude '*.map' \
+            spatial/booth/ dist/spatial/booth/
+          # Ensure directory indexes work on Pages
+          touch dist/spatial/.nojekyll
+          touch dist/spatial/booth/.nojekyll
+          # Optional wasm modulator if present
+          if [ -f spatial/wasm/booth_modulator.wasm ]; then
+            mkdir -p dist/spatial/booth/../wasm dist/wasm
+            cp -f spatial/wasm/booth_modulator.wasm dist/wasm/booth_modulator.wasm
+            # booth may fetch /wasm/… relative to site root under /aito/
+            mkdir -p dist/spatial/wasm
+            cp -f spatial/wasm/booth_modulator.wasm dist/spatial/wasm/booth_modulator.wasm 2>/dev/null || true
+          fi
+          ls -la dist/spatial/booth | head -20
+          test -f dist/spatial/booth/index.html
+          test -f dist/spatial/booth/gsplat-booth.js
 
-      # Ensure .nojekyll is present in the published artifact so that if GitHub's
-      # legacy Pages/Jekyll processor ever inspects the output, it won't try to
-      # parse our static HTML (or any leftover files) as Jekyll content with YAML.
-      # The root .nojekyll in the repo also suppresses processing of source files
-      # like site/src/**/*.astro that contain Astro frontmatter (--- ... ---).
       - name: Add .nojekyll to published site root
         run: |
           touch dist/.nojekyll
-          # Also for the hub subdir in case it is accessed directly
           touch dist/hub/.nojekyll 2>/dev/null || true
+          touch dist/spatial/.nojekyll 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
