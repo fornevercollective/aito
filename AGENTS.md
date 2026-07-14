@@ -4,9 +4,21 @@ Conventions for any agent (human or LLM) editing this repo.
 
 ## What aito is
 
-A WebGL effect-layer system over a before/after slider, driven by AI
-inference signals over a WebSocket. The visual stack is the product;
-the inference backend is pluggable.
+**One monorepo** ([fornevercollective/aito](https://github.com/fornevercollective/aito)):
+
+1. **Editor** (`src/`) — WebGL effect-layer system over a before/after slider, AI over WebSocket.
+2. **Spatial Live** (`spatial/`) — gsplat booth, multi-source live, ffmpeg media, hands/depth (was aito-mac).
+3. **Living Canvas** (`versions/living-canvas/`) — research pivot.
+4. **Site** (`site/`) — public hub / marketing Astro.
+
+The editor is the shipping product; spatial live is first-class local.
+
+## Spatial live
+
+- Launch: `./Launch-Spatial.command` or `npm run spatial` → http://127.0.0.1:8768/booth/
+- Edit booth under `spatial/booth/` only (do not revive a parallel `~/dev/aito-mac` tree as source of truth).
+- Media APIs: `spatial/scripts/serve.mjs` + `booth-media.mjs`
+- Bridge to editor: `src/lib/spatial-depth.ts` + `window.aitoBoothHand` / `window.aitoBoothDepth`
 
 ## Hot spots
 

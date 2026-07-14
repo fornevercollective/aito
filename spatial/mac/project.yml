@@ -1,0 +1,29 @@
+name: AitoMac
+options:
+  bundleIdPrefix: com.fornevercollective
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+targets:
+  AitoMac:
+    type: application
+    platform: macOS
+    sources:
+      - path: AitoMac
+        excludes:
+          - Info.plist
+    info:
+      path: AitoMac/Info.plist
+      properties:
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        NSCameraUsageDescription: aito-mac gsplat booth needs the camera for live point-cloud capture.
+        NSMicrophoneUsageDescription: Microphone is optional for future audio-reactive booth VFX.
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.fornevercollective.aito-mac
+      PRODUCT_NAME: AitoMac
+      SWIFT_VERSION: "5.9"
+      MACOSX_DEPLOYMENT_TARGET: "13.0"
+      CODE_SIGN_IDENTITY: "-"
+      ENABLE_HARDENED_RUNTIME: NO

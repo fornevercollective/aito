@@ -2,7 +2,7 @@
   "name": "aito-umbrella",
   "private": true,
   "version": "0.0.1",
-  "description": "aito — AI photo retouching. One umbrella repo with multiple iterations (main track + living-canvas pivot).",
+  "description": "aito \u2014 editor + spatial live + living-canvas. Umbrella monorepo (was aito_all).",
   "type": "module",
   "workspaces": [
     "site"
@@ -19,7 +19,11 @@
     "mock:telemetry": "python3 server/mock_ws.py",
     "launch": "bash start.sh",
     "launch:stageforge": "bash Launch-StageForge.command",
-    "sync:imagine-presets": "node scripts/sync-imagine-presets.mjs"
+    "spatial": "bash spatial/start.sh",
+    "spatial:open": "AITO_OPEN_BROWSER=1 bash spatial/start.sh",
+    "launch:spatial": "bash Launch-Spatial.command",
+    "sync:imagine-presets": "node scripts/sync-imagine-presets.mjs",
+    "living-canvas": "npm --prefix apps/living-canvas run dev"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",

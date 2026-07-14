@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>aito-mac · gsplat booth</title>
+  <link rel="stylesheet" href="gsplat-booth.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="booth" id="booth-root">
+    <!-- Boot wizard: path · specs · devices · AI cal -->
+    <div class="booth-boot" id="booth-boot" aria-live="polite">
+      <div class="booth-boot-wizard" id="booth-boot-wizard">
+        <header class="boot-wiz-head">
+          <span class="boot-wiz-accent"></span>
+          <div>
+            <p class="boot-wiz-kicker">AITO-MAC · SETUP</p>
+            <h2 class="boot-wiz-title">Booth launch paths</h2>
+            <p class="boot-wiz-sub">Pick a setup · probe this machine · choose devices · optional AI auto-cal</p>
+          </div>
+          <button type="button" class="booth-btn" id="boot-skip" title="Skip wizard">Skip →</button>
+        </header>
+
+        <div class="boot-wiz-grid">
+          <section class="boot-wiz-panel" aria-label="Setup paths">
+            <h3 class="boot-wiz-h">1 · Path</h3>
+            <div class="boot-path-list" id="boot-path-list"></div>
+          </section>
+
+          <section class="boot-wiz-panel" aria-label="Machine specs">
+            <h3 class="boot-wiz-h">2 · Machine
+              <button type="button" class="booth-btn booth-btn--tiny" id="boot-probe">Probe</button>
+            </h3>
+            <div class="boot-specs" id="boot-specs"><p class="boot-muted">Click Probe for CPU · GPU · WebGL · services</p></div>
+            <div class="boot-perf-row" id="boot-perf-row">
+              <button type="button" class="booth-btn boot-perf" data-perf="lite">Lite</button>
+              <button type="button" class="booth-btn boot-perf is-active" data-perf="balanced">Balanced</button>
+              <button type="button" class="booth-btn boot-perf" data-perf="high">High</button>
+            </div>
+          </section>
+
+          <section class="boot-wiz-panel" aria-label="Devices and feeds">
+            <h3 class="boot-wiz-h">3 · Devices &amp; feeds
+              <button type="button" class="booth-btn booth-btn--tiny" id="boot-refresh-devs">Refresh</button>
+            </h3>
+            <div class="boot-device-chips" id="boot-device-chips" aria-label="Pick a camera quickly"></div>
+            <label class="boot-field">
+              <span>Primary camera</span>
+              <select id="boot-device-select" class="booth-select"><option value="">— list devices —</option></select>
+            </label>
+            <label class="boot-field">
+              <span>Secondary (dual)</span>
+              <select id="boot-device-b" class="booth-select"><option value="">— optional Continuity / USB —</option></select>
+            </label>
+            <label class="boot-field">
+              <span>Live URL (optional)</span>
+              <input type="url" id="boot-live-url" class="booth-input" placeholder="https://… mp4 / m3u8 / YouTube" spellcheck="false">
+            </label>
+            <label class="boot-check">
+              <input type="checkbox" id="boot-ai-cal" checked>
+              <span>AI auto-cal after start (scene → params)</span>
+            </label>
+            <label class="boot-check">
+              <input type="checkbox" id="boot-link-device" checked>
+              <span>Link chosen cameras for next launch</span>
+            </label>
+          </section>
+        </div>
+
+        <footer class="boot-wiz-foot">
+          <p class="boot-wiz-trust" id="boot-trust-line">Official local booth · MediaPipe · optional JAX · fornevercollective / grok-public-folder</p>
+          <div class="boot-wiz-actions">
+            <button type="button" class="booth-btn" id="boot-cancel">Blank canvas</button>
+            <button type="button" class="booth-btn booth-btn--flat-accent" id="boot-launch">Launch setup</button>
+          </div>
+        </footer>
+      </div>
+    </div>
+    <!-- Resolve / Grokpool-style chrome (fornevercollective grok-public-folder) -->
+    <header class="booth-chrome" id="booth-chrome">
+      <div class="booth-chrome-header">
+        <span class="booth-chrome-accent" aria-hidden="true"></span>
+        <div class="booth-chrome-brand">
+          <div class="booth-chrome-title">AITO-MAC</div>
+          <div class="booth-chrome-sub">gsplat booth · Resolve workflow · fornevercollective</div>
+        </div>
+          <div class="booth-chrome-monitor" aria-live="polite">
+          <button type="button" class="booth-chrome-iconbtn" id="booth-toggle-left" title="Hide / show left feeds column">◧</button>
+          <button type="button" class="booth-chrome-iconbtn" id="booth-toggle-right" title="Hide / show right controls column">◨</button>
+          <button type="button" class="booth-chrome-iconbtn" id="booth-toggle-float" title="Show / hide staged float player" hidden>▣</button>
+          <span class="booth-mon" id="booth-mon-tier">T2</span>
+          <span class="booth-mon" id="booth-mon-fps">FPS —</span>
+          <span class="booth-mon" id="booth-mon-pts">PTS —</span>
+          <span class="booth-mon booth-mon--status" id="booth-status">Loading…</span>
+        </div>
+      </div>
+
+      <nav class="booth-menubar" role="menubar" aria-label="Booth pages">
+        <button type="button" class="booth-menutab is-active" role="menuitem" data-menu="sources" title="Cameras &amp; capture">Sources</button>
+        <button type="button" class="booth-menutab" role="menuitem" data-menu="live" title="Live feeds &amp; stage">Live</button>
+        <button type="button" class="booth-menutab" role="menuitem" data-menu="spatial" title="Dual · screen · sphere">Spatial</button>
+        <button type="button" class="booth-menutab" role="menuitem" data-menu="studio" title="Studio broadcast · LiDAR">Studio</button>
+        <button type="button" class="booth-menutab" role="menuitem" data-menu="audio" title="MIDI · mic · track">Audio</button>
+        <button type="button" class="booth-menutab" role="menuitem" data-menu="output" title="Snapshot · pair · close">Output</button>
+        <button type="button" class="booth-menutab" role="menuitem" data-menu="qbpm" title="QBPM graph · music · live rail">QBPM</button>
+      </nav>
+
+      <!-- Nested Resolve flatButton groups (grok-public-folder UIHelpers) -->
+      <div class="booth-toolbar is-active" id="booth-toolbar-sources" data-menu-panel="sources">
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Tier</span>
+          <div class="booth-btn-group-row booth-seg" id="booth-tier-bar-host"></div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Capture</span>
+          <div class="booth-btn-group-row booth-seg" role="group" aria-label="Capture source">
+            <button type="button" class="booth-btn booth-btn--seg booth-btn--on" id="booth-start" title="Built-in / FaceTime">Desktop</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-iphone" title="iPhone Continuity">iPhone</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-dual" title="Dual Continuity">Dual</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-deskview" title="Desk View">Desk</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Device</span>
+          <div class="booth-btn-group-row">
+            <select class="booth-select booth-device-select" id="booth-device" title="Camera" aria-label="Camera device">
+              <option value="">Cameras…</option>
+            </select>
+            <select class="booth-select booth-device-select" id="booth-combine" title="Combine" aria-label="Combine mode">
+              <option value="spatial">Spatial dual</option>
+              <option value="sbs">Side-by-side</option>
+              <option value="pip">PiP</option>
+              <option value="primary">Primary only</option>
+            </select>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Session</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg booth-btn--on" id="booth-mirror">Mirror</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-stop" disabled>Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="booth-toolbar" id="booth-toolbar-live" data-menu-panel="live" hidden>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Feed</span>
+          <div class="booth-btn-group-row booth-seg" role="group" aria-label="Live feeds">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-live" title="Live rail">Live rail</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-screen" title="Screen share">Screen</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-hexcast" title="Hexcast">Hexcast</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Stage</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-float-show" title="Show float player">Float</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-hide-rails" title="Hide side columns">Canvas</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">AI</span>
+          <div class="booth-btn-group-row">
+            <button type="button" class="booth-btn booth-btn--flat-accent" id="booth-autocal" title="AI scene auto-calibrate">Auto-cal</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="booth-toolbar" id="booth-toolbar-spatial" data-menu-panel="spatial" hidden>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Stack</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-spatial-dual" title="Dual spatial stack">Dual stack</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-spatial-screen" title="Screen into sphere">+ Screen</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Export</span>
+          <div class="booth-btn-group-row">
+            <button type="button" class="booth-btn" id="booth-pair-shot" title="Splatline pair">Pair export</button>
+          </div>
+        </div>
+        <span class="booth-toolbar-hint">Dual + Screen → voxel sphere · nest / parallax in right panel</span>
+      </div>
+
+      <div class="booth-toolbar" id="booth-toolbar-studio" data-menu-panel="studio" hidden>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Broadcast</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--flat-accent" id="booth-studio" title="Studio LiDAR · podcast table">Studio</button>
+            <button type="button" class="booth-btn booth-btn--seg booth-btn--flat-accent" id="booth-crowd-spire" title="Makkah Live · spire cams · voxel wave + TF pattern predict">Crowd live</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-autocal-studio" title="AI cal on studio frame">AI link cal</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Layout</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-studio-float" title="Show staged float">Float</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-studio-floor" title="Toggle floor plane">Floor</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Kaaba cams</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-kaaba-tawaf" title="Tawaf orbit · Mataf">Tawaf</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-kaaba-fly" title="Gate flythrough">Fly</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-kaaba-above" title="Above approach">Above</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-kaaba-levels" title="Elevated ring levels">Levels</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-kaaba-towers" title="Minaret · clock tower cams">Towers</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-kaaba-green" title="Green lantern start line">Green</button>
+          </div>
+        </div>
+        <span class="booth-toolbar-hint" id="booth-analysis-stat">LiDAR · Mataf · gates · towers · TF analysis</span>
+      </div>
+
+      <div class="booth-toolbar" id="booth-toolbar-audio" data-menu-panel="audio" hidden>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Input</span>
+          <div class="booth-btn-group-row booth-seg" role="group" aria-label="Audio input">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-midi">MIDI</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-audio" title="Mic FFT">Mic FFT</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-track" title="Track">Track</button>
+            <input type="file" id="booth-track-file" accept="audio/*,.m4a,.mp3,.wav,.aac" hidden>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Transport</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-audio-play" title="Play track">Play</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-audio-pause" title="Pause track">Pause</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="booth-toolbar" id="booth-toolbar-output" data-menu-panel="output" hidden>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Output</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-shot">Snapshot</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-close">Close</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Columns</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-out-left" title="Toggle left feeds">◧ Feeds</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-out-right" title="Toggle right panel">◨ Panel</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Setup</span>
+          <div class="booth-btn-group-row">
+            <button type="button" class="booth-btn booth-btn--flat-accent" id="booth-reopen-wizard" title="Reopen boot wizard">Boot wizard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- QBPM · side handlers; center load is opt-in (pauses cloud) -->
+      <div class="booth-toolbar" id="booth-toolbar-qbpm" data-menu-panel="qbpm" hidden>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">QBPM</span>
+          <div class="booth-btn-group-row booth-seg" role="group" aria-label="QBPM">
+            <button type="button" class="booth-btn booth-btn--flat-accent" id="booth-qbpm-open" title="Open QBPM in its own window (recommended)">Pop out</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-qbpm-center" title="Optional in-booth load — pauses point cloud">Load center</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-qbpm-probe" title="Probe QBPM">Probe</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Live IK</span>
+          <div class="booth-btn-group-row booth-seg" role="group" aria-label="Track profile">
+            <button type="button" class="booth-btn booth-btn--seg" data-ik-profile="hands" title="Hands only · lightest">Hands</button>
+            <button type="button" class="booth-btn booth-btn--seg booth-btn--on" data-ik-profile="body" title="Body + hands">Body</button>
+            <button type="button" class="booth-btn booth-btn--seg" data-ik-profile="eco" title="Skip frames · eco">Eco</button>
+          </div>
+        </div>
+        <div class="booth-btn-group">
+          <span class="booth-btn-group-label">Bus</span>
+          <div class="booth-btn-group-row booth-seg">
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-qbpm-bus" title="Push IK bus">Push IK</button>
+            <button type="button" class="booth-btn booth-btn--seg" id="booth-qbpm-live" title="Send staged live URL">Send live</button>
+            <button type="button" class="booth-btn booth-btn--seg booth-btn--on" id="booth-ik-toggle" title="Toggle live IK">IK on</button>
+          </div>
+        </div>
+        <span class="booth-toolbar-hint">Pop out = full QBPM · Load center pauses cloud · sides stay handlers</span>
+      </div>
+    </header>
+
+    <canvas class="booth-canvas" id="booth-canvas" aria-label="Point cloud view"></canvas>
+
+    <!-- Center stage: QBPM ecosystem folded into AITO (side columns = control handlers) -->
+    <section class="booth-center-stage" id="booth-center-stage" hidden aria-label="QBPM center workspace">
+      <div class="booth-center-bar" id="booth-center-bar">
+        <span class="booth-center-badge">QBPM</span>
+        <span class="booth-center-title" id="booth-center-title">Ecosystem · graph · music · video</span>
+        <span class="booth-center-status" id="booth-center-status">—</span>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-center-reload" title="Reload QBPM">Reload</button>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-center-cloud" title="Toggle point-cloud underlay">Cloud</button>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-center-pin" title="Keep center when switching tabs">Pin</button>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-center-pop" title="Open QBPM in window">Pop</button>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-center-close" title="Hide center · back to cloud">✕</button>
+      </div>
+      <iframe class="booth-center-frame" id="booth-center-frame" title="QBPM workspace"
+        allow="autoplay; microphone; camera; midi; clipboard-read; clipboard-write; fullscreen"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </section>
+
+    <!-- Floating staged-feed player (over canvas; hide to free view) -->
+    <div class="booth-float-player" id="booth-float-player" hidden aria-label="Staged feed player">
+      <div class="booth-float-titlebar" id="booth-float-drag">
+        <span class="booth-float-badge">LIVE</span>
+        <span class="booth-float-title" id="booth-float-title">Staged feed</span>
+        <button type="button" class="booth-float-hide" id="booth-float-hide" title="Hide floating player (canvas free)">✕</button>
+      </div>
+      <div class="booth-float-video-wrap">
+        <!-- liveVideoEl is moved here when staged + visible -->
+        <video class="booth-float-video-slot" id="booth-center-video" playsinline muted autoplay loop hidden></video>
+      </div>
+      <div class="booth-float-controls">
+        <button type="button" class="booth-btn" id="booth-float-play" title="Play">Play</button>
+        <button type="button" class="booth-btn" id="booth-float-pause" title="Pause">Pause</button>
+        <button type="button" class="booth-btn" id="booth-float-stop" title="Stop / rewind">Stop</button>
+        <span class="booth-float-time" id="booth-float-time">—</span>
+      </div>
+    </div>
+
+    <video class="booth-video" id="booth-video" playsinline muted autoplay></video>
+    <video class="booth-video" id="booth-video-secondary" playsinline muted autoplay></video>
+
+    <aside class="booth-feeds" id="booth-feeds" aria-label="Sources and live feeds">
+      <div class="booth-panel-toolbar booth-feeds-toolbar" id="booth-feeds-toolbar" role="toolbar" aria-label="Left column sections">
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-feeds-collapse" title="Collapse all left sections">Collapse</button>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-feeds-expand" title="Expand all left sections">Expand</button>
+        <span class="booth-feeds-toolbar-sep" aria-hidden="true"></span>
+        <button type="button" class="booth-btn booth-btn--tiny booth-btn--seg" id="booth-feeds-sections-on" title="Turn all section toggles on">On</button>
+        <button type="button" class="booth-btn booth-btn--tiny booth-btn--seg" id="booth-feeds-sections-off" title="Turn all section toggles off">Off</button>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-feeds-stage" title="Stage focus — open Live · collapse others">Stage</button>
+      </div>
+      <details class="booth-section" id="booth-sources-section" open>
+        <summary class="booth-section-sum">Sources</summary>
+        <div class="booth-section-body">
+          <div class="booth-src-toolbar">
+            <button type="button" class="booth-btn booth-btn--tiny" id="booth-sources-all-on" title="Turn all capture sources on">All on</button>
+            <button type="button" class="booth-btn booth-btn--tiny" id="booth-sources-all-off" title="Turn all capture sources off">All off</button>
+          </div>
+          <div class="booth-src-list" id="booth-src-list" role="group" aria-label="Capture source toggles"></div>
+          <p class="booth-src-hint">Capture on/off · live feeds stage into floor + person cloud</p>
+        </div>
+      </details>
+      <!-- Live rail ABOVE layers so stage/blank/qbpm is first-class in left column -->
+      <details class="booth-section booth-live-panel" id="booth-live-panel" open>
+        <summary class="booth-section-sum booth-live-summary">Live video · blank / qbpm</summary>
+        <div class="booth-section-body">
+          <p class="booth-src-hint">Paste YouTube / mp4 / HLS · Stage → floor video + people point cloud</p>
+          <div id="booth-live-host" class="booth-live-host"></div>
+        </div>
+      </details>
+      <details class="booth-section" id="booth-feeds-section" open>
+        <summary class="booth-section-sum">Layers</summary>
+        <div class="booth-section-body">
+          <div class="booth-src-toolbar">
+            <button type="button" class="booth-btn booth-btn--tiny" id="booth-layers-all-on" title="Enable all processable layers">All on</button>
+            <button type="button" class="booth-btn booth-btn--tiny" id="booth-layers-all-off" title="Disable all processable layers">All off</button>
+            <button type="button" class="booth-btn booth-btn--tiny" id="booth-layers-solo" title="Hand · person single-user track group">Hand·person</button>
+            <button type="button" class="booth-btn booth-btn--tiny" id="booth-layers-crowd" title="Hands · crowd multi + edge separation">Hands·crowd</button>
+          </div>
+          <div class="booth-feed-grid" id="booth-feed-grid"></div>
+        </div>
+      </details>
+    </aside>
+
+    <aside class="booth-panel booth-panel--staging" id="booth-panel" aria-label="Booth controls">
+      <div class="booth-panel-toolbar">
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-collapse-all" title="Collapse all sections">Collapse</button>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-expand-all" title="Expand all sections">Expand</button>
+        <span class="booth-feeds-toolbar-sep" aria-hidden="true"></span>
+        <button type="button" class="booth-btn booth-btn--tiny booth-btn--seg" id="booth-panel-sections-on" title="Turn all section toggles on">On</button>
+        <button type="button" class="booth-btn booth-btn--tiny booth-btn--seg" id="booth-panel-sections-off" title="Turn all section toggles off">Off</button>
+        <button type="button" class="booth-btn booth-btn--tiny" id="booth-stage-light" title="Light staging — dim idle sections">Stage</button>
+      </div>
+
+      <details class="booth-section" id="booth-camera-panel" open>
+        <summary class="booth-section-sum booth-camera-summary">Cameras &amp; devices</summary>
+        <div class="booth-section-body" id="booth-camera-panel-body"></div>
+      </details>
+
+      <details class="booth-section" id="booth-motion-section" open>
+        <summary class="booth-section-sum">Motion &amp; spatial</summary>
+        <div class="booth-section-body" id="booth-motion-panel-body"></div>
+      </details>
+
+      <details class="booth-section" id="booth-cloud-section" open>
+        <summary class="booth-section-sum">Point cloud &amp; depth</summary>
+        <div class="booth-section-body">
+          <div id="booth-sliders"></div>
+        </div>
+      </details>
+
+      <details class="booth-section" id="booth-stack-section" open>
+        <summary class="booth-section-sum">Tools · stack</summary>
+        <div class="booth-section-body">
+          <div class="booth-tools" id="booth-tools">
+            <ul class="booth-tool-list" id="booth-tool-list"></ul>
+          </div>
+        </div>
+      </details>
+
+      <details class="booth-section" id="booth-ik-section" open>
+        <summary class="booth-section-sum">Live IK · MediaPipe</summary>
+        <div class="booth-section-body">
+          <p class="booth-motion-desc" id="booth-ik-summary">
+            On-device tracking · 2-bone arm/leg IK · control bus for cloud + QBPM.
+            Prefer <strong>Hands / Body / Eco</strong> over offline Splatline for live mods.
+            Gestures → depth / wave / spin (measure_plan · Leap soft targets).
+          </p>
+          <div id="booth-ik-stats" class="booth-ik-stats">IK · idle</div>
+          <div id="booth-ik-sliders"></div>
+        </div>
+      </details>
+
+      <details class="booth-section" id="booth-resources-section">
+        <summary class="booth-section-sum">Hand · spatial resources</summary>
+        <div class="booth-section-body">
+          <div id="booth-hand-resources" class="booth-resources"></div>
+        </div>
+      </details>
+
+      <details class="booth-section" id="booth-qbpm-section" open>
+        <summary class="booth-section-sum">QBPM workspace</summary>
+        <div class="booth-section-body" id="booth-qbpm-body"></div>
+      </details>
+
+      <details class="booth-section" id="booth-midi-section">
+        <summary class="booth-section-sum">MIDI map</summary>
+        <div class="booth-section-body">
+          <div class="booth-midi">
+            <div id="booth-midi-map"></div>
+            <p class="booth-midi-log" id="booth-midi-log">—</p>
+          </div>
+        </div>
+      </details>
+    </aside>
+
+    <p class="booth-hud" id="booth-hud">—</p>
+
+    <!-- Resolve trust footer (UIHelpers.trustFooter · grok-public-folder) -->
+    <footer class="booth-footer" id="booth-footer">
+      <span class="booth-footer-accent"></span>
+      <div class="booth-footer-main">
+        <div class="booth-footer-row">
+          <span class="booth-footer-brand">aito-mac</span>
+          <span class="booth-footer-sep">·</span>
+          <span class="booth-footer-msg" id="booth-footer-msg">Resolve chrome · MediaPipe 0.10.35 · hand resources</span>
+        </div>
+        <div class="booth-footer-row booth-footer-row--dim">
+          <span class="booth-footer-trust">Official local booth · fornevercollective / grok-public-folder · xAI-style Resolve workflow</span>
+        </div>
+      </div>
+      <button type="button" class="booth-footer-btn" id="booth-footer-wizard" title="Boot wizard">Setup</button>
+      <button type="button" class="booth-footer-btn" id="booth-footer-probe" title="Re-probe machine">Probe</button>
+    </footer>
+  </div>
+  <script src="booth-native.js"></script>
+  <script src="gsplat-booth.js" type="module"></script>
+</body>
+</html>

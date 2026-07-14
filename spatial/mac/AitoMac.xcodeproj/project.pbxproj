@@ -1,0 +1,316 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2B7F4AD44C3F88BE40AF27AF /* AitoMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B302FBAEFF7E47F6F09857B4 /* AitoMacApp.swift */; };
+		462C85312B7978650611BE18 /* WalkerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D57FC839D18CE629BD8B430 /* WalkerBridge.swift */; };
+		6F338B143BB96FF3533EB618 /* RepelBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9FD1DEB881D64BE98EDAA22 /* RepelBridge.swift */; };
+		C4F6C1D6E275C2381BF40C13 /* LuaBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EDD4905D1D8017302E335D /* LuaBridge.swift */; };
+		F1402915F19637B1B1CA6922 /* BoothViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5B0DE38813A433E6E55757 /* BoothViewController.swift */; };
+		FBA812CFE9D0FF57E7EEFC41 /* JaxBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A0AF83CC09160349AA78C3 /* JaxBridge.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		03A0AF83CC09160349AA78C3 /* JaxBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JaxBridge.swift; sourceTree = "<group>"; };
+		3D57FC839D18CE629BD8B430 /* WalkerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkerBridge.swift; sourceTree = "<group>"; };
+		4A5B0DE38813A433E6E55757 /* BoothViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoothViewController.swift; sourceTree = "<group>"; };
+		4EB9BB64CB97D10A902897E4 /* AitoMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AitoMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B302FBAEFF7E47F6F09857B4 /* AitoMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AitoMacApp.swift; sourceTree = "<group>"; };
+		C7EDD4905D1D8017302E335D /* LuaBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LuaBridge.swift; sourceTree = "<group>"; };
+		E9FD1DEB881D64BE98EDAA22 /* RepelBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepelBridge.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		329E8ED3EBE1EF6B11CB37D1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4EB9BB64CB97D10A902897E4 /* AitoMac.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7F5F7ADDE59B567CADC31CE3 = {
+			isa = PBXGroup;
+			children = (
+				C702117726F66FAE5F21C947 /* AitoMac */,
+				329E8ED3EBE1EF6B11CB37D1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C702117726F66FAE5F21C947 /* AitoMac */ = {
+			isa = PBXGroup;
+			children = (
+				B302FBAEFF7E47F6F09857B4 /* AitoMacApp.swift */,
+				4A5B0DE38813A433E6E55757 /* BoothViewController.swift */,
+				D59CBF5F53CA525B6821DEA4 /* Bridges */,
+			);
+			path = AitoMac;
+			sourceTree = "<group>";
+		};
+		D59CBF5F53CA525B6821DEA4 /* Bridges */ = {
+			isa = PBXGroup;
+			children = (
+				03A0AF83CC09160349AA78C3 /* JaxBridge.swift */,
+				C7EDD4905D1D8017302E335D /* LuaBridge.swift */,
+				E9FD1DEB881D64BE98EDAA22 /* RepelBridge.swift */,
+				3D57FC839D18CE629BD8B430 /* WalkerBridge.swift */,
+			);
+			path = Bridges;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3479BF8311883550F3387640 /* AitoMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 964CA54FB58B2E2BE85EB8C0 /* Build configuration list for PBXNativeTarget "AitoMac" */;
+			buildPhases = (
+				A3E264B9F7B291050D700138 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AitoMac;
+			packageProductDependencies = (
+			);
+			productName = AitoMac;
+			productReference = 4EB9BB64CB97D10A902897E4 /* AitoMac.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2CAAF537265A67AEE3013438 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = EE60D6480167EA2EE140D48F /* Build configuration list for PBXProject "AitoMac" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 7F5F7ADDE59B567CADC31CE3;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 329E8ED3EBE1EF6B11CB37D1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3479BF8311883550F3387640 /* AitoMac */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A3E264B9F7B291050D700138 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B7F4AD44C3F88BE40AF27AF /* AitoMacApp.swift in Sources */,
+				F1402915F19637B1B1CA6922 /* BoothViewController.swift in Sources */,
+				FBA812CFE9D0FF57E7EEFC41 /* JaxBridge.swift in Sources */,
+				C4F6C1D6E275C2381BF40C13 /* LuaBridge.swift in Sources */,
+				6F338B143BB96FF3533EB618 /* RepelBridge.swift in Sources */,
+				462C85312B7978650611BE18 /* WalkerBridge.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		11075E6CEDEF7AE81F077AC1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		33135930EC6A0224EF5EFDEF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				INFOPLIST_FILE = AitoMac/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fornevercollective.aito-mac";
+				PRODUCT_NAME = AitoMac;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		88A686D03AA0215215836AED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		EB4074E33398B98226C0B904 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				INFOPLIST_FILE = AitoMac/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fornevercollective.aito-mac";
+				PRODUCT_NAME = AitoMac;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		964CA54FB58B2E2BE85EB8C0 /* Build configuration list for PBXNativeTarget "AitoMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				33135930EC6A0224EF5EFDEF /* Debug */,
+				EB4074E33398B98226C0B904 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EE60D6480167EA2EE140D48F /* Build configuration list for PBXProject "AitoMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				11075E6CEDEF7AE81F077AC1 /* Debug */,
+				88A686D03AA0215215836AED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2CAAF537265A67AEE3013438 /* Project object */;
+}

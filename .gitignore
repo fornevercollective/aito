@@ -14,6 +14,16 @@ site/.astro
 site/.netlify
 site/.vercel
 
+# Spatial live (vendored booth / optional native build products)
+spatial/**/__pycache__/
+spatial/aito-mac.app/
+spatial/bin/AitoMac
+spatial/bin/AitoMac.app/
+spatial/walker/target/
+spatial/wasm/target/
+spatial/mac/**/xcuserdata/
+spatial/mac/**/DerivedData/
+
 # Common editor / OS noise
 .idea/
 .vscode/

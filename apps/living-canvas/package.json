@@ -1,0 +1,36 @@
+{
+  "name": "aito",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "AI image/video retouching app with AI-controllable WebGL effect layers over a before/after slider.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc -b --noEmit",
+    "mock:server": "python3 server/inference_ws.py",
+    "mock:telemetry": "python3 server/mock_ws.py",
+    "launch": "bash start.sh",
+    "launch:stageforge": "bash Launch-StageForge.command"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "@react-three/drei": "^9.114.0",
+    "@react-three/fiber": "^8.17.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.169.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.169.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}

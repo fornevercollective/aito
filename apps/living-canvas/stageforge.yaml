@@ -1,0 +1,158 @@
+# StageForge — aito (AI photo retouching / editing workspace)
+# Launch: ./Launch-StageForge.command   OR   stageforge up -c stageforge.yaml
+#
+# This is the orchestration + roadmap driver for the photo editing app evolution.
+# Services stay healthy; the jobs/stages below are the "iterate through all next steps" surface.
+
+version: 1
+project: aito
+loop:
+  enabled: true
+  mode: health          # health = gentle restart on change; deploy = full cycle
+  watch:
+    - src/**
+    - server/**
+    - stageforge.yaml
+    - package.json
+    - start.sh
+  interval: 25s
+  on_fail: retry
+  max_retry: 4
+
+services:
+  - name: frontend
+    command: npm run dev
+    cwd: .
+    port: 5173
+    health: /               # Vite serves index.html
+    conflict: bump
+    skip_if_healthy: true
+    env:
+      AITO_NO_OPEN: "1"
+      STAGEFORGE: "1"
+      VITE_AI_WS: "ws://127.0.0.1:8765"
+
+  - name: inference
+    command: python3 server/inference_ws.py
+    cwd: .
+    port: 8765
+    health: null            # websocket — we rely on the python process staying up
+    conflict: bump
+    skip_if_healthy: true
+    env:
+      STAGEFORGE: "1"
+    # For pure mock development you can override on the command line:
+    # command: python3 server/mock_ws.py
+
+integrations:
+  # Future: real inpaint / generative fill endpoint (LaMa, SD inpaint, etc.)
+  - id: inpaint
+    label: Inpaint / generative fill
+    base_url: "env:AITO_INPAINT_URL"
+    probe: /health
+
+  # Cursor / MCP for agentic iteration on the editor
+  - id: mcp
+    label: MCP servers
+    base_url: "env:MCP_HUB_URL"
+    probe: /
+
+jobs:
+  # === Core photo editing roadmap (from the approved plan) ===
+  - id: masked-corrections
+    kind: agent
+    label: "Phase 1: Masked adjustments (SAM + active mask scoping)"
+    provider: env:STAGEFORGE_PROVIDER
+    stage: corrections
+
+  - id: brush-refinement
+    kind: agent
+    label: "Brush tool for SAM mask cleanup (add/subtract, soft)"
+    provider: env:STAGEFORGE_PROVIDER
+    stage: corrections
+
+  - id: hatch-export
+    kind: agent
+    label: "Hatch / pro selection viz + mask-aware export variants (subject only, BG remove)"
+    provider: env:STAGEFORGE_PROVIDER
+    stage: export
+
+  - id: bake-commit
+    kind: agent
+    label: "Commit / bake pipeline (composite corrections + layers → new after source)"
+    provider: env:STAGEFORGE_PROVIDER
+    stage: bake
+
+  - id: local-adjust-shaders
+    kind: agent
+    label: "Selective GLSL passes for masked dodge/burn/clarity/etc."
+    provider: env:STAGEFORGE_PROVIDER
+    stage: corrections
+
+  # === High-end future track (vwall + cinematic HUD) ===
+  - id: vwall-pivot
+    kind: research
+    label: "Background: vwall living canvas + Gmunk/Tron HUD pivot exploration"
+    provider: env:STAGEFORGE_PROVIDER
+    stage: pivot
+
+  - id: lut-mood
+    kind: agent
+    label: "LUT / mood theming system (VSCO, Resolve, large data flows)"
+    provider: env:STAGEFORGE_PROVIDER
+    stage: pivot
+
+  # === Infrastructure / quality ===
+  - id: capture-bake
+    kind: agent
+    label: "High-fidelity offscreen capture + native-res bake utility"
+    provider: env:STAGEFORGE_PROVIDER
+    stage: bake
+
+  - id: sam-matting
+    kind: agent
+    label: "Improve SAM matting / edge quality for professional BG removal export"
+    provider: env:STAGEFORGE_PROVIDER
+    stage: corrections
+
+stages:
+  - id: ports
+    label: Resolve ports (5173 / 8765)
+    actions:
+      - frontend
+      - inference
+
+  - id: boot
+    label: Boot frontend + inference
+    actions:
+      - frontend
+      - inference
+
+  - id: corrections
+    label: Masked corrections & brush (Halide core)
+    jobs:
+      - masked-corrections
+      - brush-refinement
+      - local-adjust-shaders
+      - sam-matting
+
+  - id: export
+    label: Hatch visualization + mask-aware export
+    jobs:
+      - hatch-export
+
+  - id: bake
+    label: Commit / bake pipeline
+    jobs:
+      - bake-commit
+      - capture-bake
+
+  - id: pivot
+    label: High-end living canvas (vwall + HUD)
+    jobs:
+      - vwall-pivot
+      - lut-mood
+
+  - id: ready
+    label: Ready for iteration
+    actions: []

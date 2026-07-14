@@ -1,21 +1,34 @@
 # aito
 
-**AI photo editing for tethered, high-end workflows.**
+**AI photo editing + spatial live — one repo.**
 
-**Desktop pro. Mobile PWA. One beautiful minimal interface.**
+[github.com/fornevercollective/aito](https://github.com/fornevercollective/aito)
+
+**Desktop pro. Mobile PWA. Local spatial booth.**
 
 - Real-time Grok commands (adjustments, LUTs, masking)
 - Live camera tethering via local companion (Canon, Sony, Phase One, etc.)
 - Film-accurate LUTs + custom .cube support (50+ presets from sibling `~/dev/imagine/style_presets`)
 - SAM-powered masked corrections + pressure-sensitive brush
 - Hatch export (subject / background / full)
+- **Spatial Live** — gsplat booth, multi-source feeds, ffmpeg (all codecs / sequences / FPS), hands + depth cloud
 - Works as a beautiful mobile PWA on iPhone and Android
 
 **[Open the editor](https://fornevercollective.github.io/aito/)** — installs as PWA  
 **[Hub, iterations & mobile notes](https://fornevercollective.github.io/aito/hub/)**  
 **[Brand](https://fornevercollective.github.io/aito/brand/) · [Pricing](https://fornevercollective.github.io/aito/pricing/) · [License](https://fornevercollective.github.io/aito/license/)**
 
-One repo. Two tracks. The editor is the product.
+One repo. **Three tracks** that share bridges:
+
+| Track | Path | Launch |
+|-------|------|--------|
+| **Editor** (product) | `src/` | `./Launch.command` · `npm run dev` |
+| **Spatial Live** | [`spatial/`](./spatial/) | `./Launch-Spatial.command` · `npm run spatial` |
+| **Living Canvas** (research) | [`apps/living-canvas/`](./apps/living-canvas/) · `versions/living-canvas/` | `npm run living-canvas` |
+
+Local umbrella `~/dev/aito_all/{aito,aito-mac,aito-living-canvas}` maps into this repo — see [AITO_ALL.md](./AITO_ALL.md).
+
+The editor is the shipping product; **spatial live + living canvas are first-class** (not separate GitHub projects).
 
 ### In action
 
@@ -79,15 +92,19 @@ The interface adapts automatically:
 
 ## Run (recommended)
 
-Double-click one of the launchers in the project root (Finder-friendly, matches the blank/stageforge pattern):
+Double-click one of the launchers in the project root (Finder-friendly):
 
-- **`Launch.command`** — Opens Terminal, starts the Vite frontend + inference server (mock by default), and opens your browser.
-- **`Launch-StageForge.command`** — Starts the full StageForge TUI orchestrator (health/restart loops + the photo editing roadmap as first-class jobs/stages). This is the control center for iterating through all the next steps.
+- **`Launch.command`** — Photo editor (Vite + inference mock) → browser.
+- **`Launch-Spatial.command`** — **Spatial Live booth** (gsplat · cameras · ffmpeg · depth) → http://127.0.0.1:8768/booth/
+- **`Launch-StageForge.command`** — StageForge TUI (roadmap jobs/stages).
 
-From Terminal you can also run:
+From Terminal:
 
 ```bash
-./start.sh                 # full workspace (frontend + mock inference)
+./start.sh                 # editor workspace (frontend + mock inference)
+./Launch-Spatial.command   # spatial live booth
+npm run spatial            # same booth, no Finder wrapper
+npm run spatial:open       # booth + open browser
 ./Launch-StageForge.command
 ```
 
@@ -95,10 +112,21 @@ Or the classic way:
 
 ```bash
 npm install
-npm run dev
+npm run dev                # editor → http://localhost:5173
+npm run spatial            # booth  → http://127.0.0.1:8768/booth/
 ```
 
-The app opens at <http://localhost:5173>.
+### Spatial Live (all-in-one local)
+
+See **[spatial/README.md](./spatial/README.md)** for the full layout. Quick map:
+
+```
+spatial/booth/             # UI + gsplat + live feeds + hands
+spatial/scripts/           # serve.mjs + booth-media (ffmpeg / sequences / FPS)
+spatial/mac/               # native AitoMac Swift sources
+spatial/zipdepth-sidecar/
+src/lib/spatial-depth.ts   # editor ↔ booth hand/depth bridge
+```
 
 ### Server modes
 

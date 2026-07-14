@@ -1,0 +1,16 @@
+[project]
+name = "aito-booth-zipdepth"
+version = "0.1.0"
+description = "Optional ZipDepth-inspired monocular depth sidecar for aito-mac booth"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+# Real ZipDepth (fabiotosi92/ZipDepth) — install package from their repo + checkpoint
+torch = ["torch>=2.4", "numpy>=1.26", "opencv-python-headless>=4.8"]
+onnx = ["onnxruntime>=1.16", "numpy>=1.26"]
+# numpy alone speeds up zip-lite multi-scale path
+numpy = ["numpy>=1.26"]
+
+[project.scripts]
+aito-booth-zipdepth = "booth_zipdepth:main"

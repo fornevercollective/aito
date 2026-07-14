@@ -1,6 +1,7 @@
 # aito — handoff
 
-Workspace: `~/dev/aito`. AI image/video retouching app.
+Workspace: `~/dev/aito` → **[fornevercollective/aito](https://github.com/fornevercollective/aito)**.  
+AI image/video retouching app **+ spatial live booth** in one monorepo.
 
 ## Current state (v0.1)
 
@@ -13,19 +14,23 @@ Workspace: `~/dev/aito`. AI image/video retouching app.
 - **Python `server/inference_ws.py`**: bidirectional WS; optional real SAM
   when `segment_anything` + checkpoint installed.
 
-## Run (new unified launchers)
+## Run (unified launchers)
 
-The project now uses the same launch pattern as `blank` + `stageforge`:
-
-- Double-click **`Launch.command`** (Finder) — full workspace + browser.
-- Double-click **`Launch-StageForge.command`** — StageForge TUI with health loops + the entire photo editing roadmap expressed as jobs/stages. This is the primary tool for "iterate through all the next steps".
+| Launcher | What |
+|----------|------|
+| **`Launch.command`** | Photo editor + mock inference |
+| **`Launch-Spatial.command`** | Spatial Live booth (`spatial/`) @ :8768 |
+| **`Launch-StageForge.command`** | StageForge TUI + roadmap jobs |
 
 From shell:
 
 ```bash
 ./start.sh
+npm run spatial          # or ./Launch-Spatial.command
 ./Launch-StageForge.command
 ```
+
+Spatial docs: [`spatial/README.md`](./spatial/README.md) · [`spatial/HANDOFF.md`](./spatial/HANDOFF.md)
 
 Classic:
 
@@ -58,7 +63,13 @@ The authoritative list of next steps now lives in `stageforge.yaml` under the `j
 1. **Inpaint behind mask**: wire mask texture into inference server
    (LaMa / SD inpaint) and set `after` from real output.
 2. **gsplat bake → glass**: feed normal/depth map into glass shader.
+   Spatial bridge: `src/lib/spatial-depth.ts` + glass mapper reads
+   booth hand depth/wave when `window.aitoBoothHand` is present.
+   Hand resources: MediaPipe 0.10.35, gesture bus, catalog in
+   `spatial/booth/hand-tracking-resources.mjs`.
 3. **Video timeline**: frame cache + per-frame SAM keyframes.
+4. **Multi-source spatial**: nested sphere/parallax in
+   `spatial/booth/` (selection, depth modes, hand → waveform, ffmpeg feeds).
 
 Launch the StageForge TUI to drive the plan iteratively:
 ```bash
